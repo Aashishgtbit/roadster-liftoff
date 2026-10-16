@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roadster Liftoff Story</title>
+<meta name="description" content="The Oct 15, 2026 Tesla Roadster unveiling: the demo, the trims, the timeline, what is still unproven, and how the 3D simulation works.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: a night broadcast from the test range. Full-bleed canvas stage, then a left-aligned spec sheet on a 12-col grid. Single dark look, by choice. */
+:root {
+  color-scheme: dark;
+  --night: #090d18;
+  --night-2: #10172a;
+  --rule: #222c45;
+  --fg: #e8ecf4;
+  --muted: #8b96ad;
+  --red: #e3342b;
+  --red-soft: #ff6a5c;
+  --gas: #c4ecff;
+  --amber: #ffb547;
+  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --gutter: max(16px, 4vw);
+}
+* { box-sizing: border-box; }
+body { background: var(--night); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: var(--gas); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--gas); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1160px; margin-inline: auto; padding-inline: var(--gutter); }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* masthead */
+.mast { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 18px; border-bottom: 1px solid var(--rule); }
+.mast .label b { color: var(--fg); font-weight: 500; }
+.live { display: inline-flex; align-items: center; gap: 8px; }
+.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px var(--red); }
+
+/* hero */
+.hero { padding-block: 40px 24px; display: grid; gap: 20px; }
+.hero h1 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(56px, 11.5vw, 156px); line-height: .84; letter-spacing: -.005em; margin: 0; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--red); }
+.hero p { margin: 0; max-width: 60ch; color: var(--muted); font-size: 18px; }
+.hero p strong { color: var(--fg); font-weight: 500; }
+
+/* stage */
+.stage { position: relative; width: 100%; height: clamp(380px, 56vw, 680px); border-block: 1px solid var(--rule); background: var(--night-2); overflow: hidden; }
+#scene { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+#scene.free { cursor: grab; touch-action: none; }
+.stage-msg { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--muted); pointer-events: none; text-align: center; padding-inline: 24px; }
+.btn[aria-pressed="true"] { border-color: var(--gas); color: var(--gas); }
+.stunts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding-block: 0 16px; }
+.stunts .label { margin-right: 4px; }
+.tab { font-family: var(--body); font-size: 15px; font-weight: 600; color: var(--fg); background: var(--night-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 14px; cursor: pointer; display: grid; text-align: left; gap: 1px; }
+.tab small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.tab:hover { border-color: var(--muted); }
+.tab[aria-selected="true"] { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+.tab:focus-visible { outline: 2px solid var(--gas); outline-offset: 3px; }
+.game { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.g-panel { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); display: grid; gap: 6px; padding: 10px 14px; background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 12px; min-width: min(320px, 70vw); }
+.g-fuel { display: grid; grid-template-columns: auto 1fr 3ch; gap: 10px; align-items: center; }
+.g-bar { height: 8px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.g-bar i { display: block; height: 100%; width: 60%; background: var(--gas); transition: width .15s linear; }
+.g-bar i.low { background: var(--red); }
+.g-fuel b, .g-stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+.g-stats { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.g-toast { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3.4vw, 34px); text-transform: uppercase; color: var(--fg); text-shadow: 0 2px 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .25s; white-space: nowrap; }
+.g-toast.show { opacity: 1; }
+.g-help { position: absolute; left: var(--gutter); bottom: 12px; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--muted); background: rgba(9,13,24,.6); padding: 6px 10px; border-radius: 6px; max-width: 60ch; }
+kbd { font-family: var(--mono); font-size: 10px; color: var(--fg); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+.g-touch { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 14px; display: none; justify-content: space-between; gap: 10px; pointer-events: auto; }
+.g-touch div { display: flex; gap: 8px; }
+.g-touch button { font-family: var(--mono); font-size: 13px; text-transform: uppercase; color: var(--fg); background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 10px; min-width: 56px; height: 56px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.g-touch button.gas { border-color: var(--red); } .g-touch button.jet { border-color: var(--gas); }
+.g-touch button.down { background: var(--rule); }
+@media (pointer: coarse) { .g-touch { display: flex; } .g-help { display: none; } }
+.g-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(9,13,24,.55); pointer-events: auto; }
+.g-card { display: grid; gap: 10px; justify-items: center; text-align: center; padding: 22px 26px; background: var(--night-2); border: 1px solid var(--rule); border-radius: 12px; }
+.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 42px; text-transform: uppercase; }
+.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 14px; }
+.g-row b { color: var(--fg); }
+.g-new { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dmg { color: var(--red-soft) !important; letter-spacing: .1em; }
+.stage.driving .stage-note { display: none; }
+@media (max-width: 560px) { .stage.driving .hud { display: none; } .stage.driving .stage-ctl { top: 14px; bottom: auto; } .stage.driving .g-panel { top: 104px; } .stage.driving .g-toast { top: 190px; } }
+@media (max-width: 560px) { .stage-ctl { top: auto; bottom: 34px; left: var(--gutter); right: var(--gutter); flex-wrap: wrap; } .stage-note { left: var(--gutter); } }
+.hud { position: absolute; top: 14px; left: var(--gutter); display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 10px 12px; background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; backdrop-filter: blur(4px); font-variant-numeric: tabular-nums; }
+.hud dt { color: var(--muted); text-transform: uppercase; }
+.hud dd { margin: 0; color: var(--fg); min-width: 13ch; }
+.hud dd.on { color: var(--gas); }
+.stage-ctl { position: absolute; top: 14px; right: var(--gutter); display: flex; gap: 8px; }
+.btn { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg); background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; padding: 9px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+.btn.primary:hover { background: var(--red-soft); border-color: var(--red-soft); }
+.stage-note { position: absolute; bottom: 10px; right: var(--gutter); font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .06em; }
+
+/* figures */
+.figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
+.fig { padding: 28px 20px 26px 0; display: grid; gap: 6px; align-content: start; }
+.fig + .fig { padding-left: 20px; border-left: 1px solid var(--rule); }
+.fig .num { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 6vw, 72px); line-height: .9; font-variant-numeric: tabular-nums; }
+.fig .num small { font-size: .45em; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.fig p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; max-width: 26ch; }
+@media (max-width: 760px) {
+  .figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fig:nth-child(3) { padding-left: 0; border-left: 0; }
+  .fig:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+
+/* sections */
+section.block { padding-block: 72px 8px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+.block > header { grid-column: 1 / span 4; display: grid; gap: 10px; align-content: start; }
+.block > .body { grid-column: 5 / span 8; min-width: 0; }
+.block h2 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: clamp(34px, 4.4vw, 52px); line-height: .95; margin: 0; text-wrap: balance; }
+.block header p { margin: 0; color: var(--muted); max-width: 40ch; }
+@media (max-width: 860px) {
+  section.block { grid-template-columns: minmax(0, 1fr); padding-block: 56px 0; }
+  .block > header, .block > .body { grid-column: 1; }
+}
+
+/* the night, beat by beat */
+.beats { list-style: none; margin: 0; padding: 0; display: grid; }
+.beats li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; padding-block: 18px; border-top: 1px solid var(--rule); }
+.beats li:last-child { border-bottom: 1px solid var(--rule); }
+.beats .t { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; color: var(--red); }
+.beats h3 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.beats p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+/* trims */
+.trims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.trim { padding: 22px 20px 24px; display: grid; gap: 10px; align-content: start; }
+.trim + .trim { border-left: 1px solid var(--rule); }
+.trim h3 { font-family: var(--display); font-weight: 800; font-size: 34px; text-transform: uppercase; margin: 0; line-height: 1; }
+.trim.rocket h3 { color: var(--red); }
+.trim p { margin: 0; color: var(--muted); font-size: 15px; }
+.tag { justify-self: start; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.tag.base { border-color: var(--gas); color: var(--gas); }
+.tag.aug { border-color: var(--amber); color: var(--amber); }
+.tag.track { border-color: var(--red); color: var(--red-soft); }
+@media (max-width: 760px) {
+  .trims { grid-template-columns: minmax(0, 1fr); }
+  .trim + .trim { border-left: 0; border-top: 1px solid var(--rule); }
+}
+
+/* drag strip */
+.strip { display: grid; gap: 14px; }
+.strip-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.lane { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr) 72px; gap: 14px; align-items: center; }
+.lane .who { font-size: 14px; line-height: 1.3; }
+.lane .who span { display: block; color: var(--muted); font-size: 12px; font-family: var(--mono); letter-spacing: .04em; }
+.track { position: relative; height: 34px; border-radius: 6px; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--rule) calc(10% - 1px) 10%), var(--night-2); border: 1px solid var(--rule); overflow: hidden; }
+.track .fill { position: absolute; inset: 0 auto 0 0; width: 100%; background: linear-gradient(90deg, transparent, rgba(227,52,43,.28)); }
+.track .car { position: absolute; top: 50%; left: 100%; width: 26px; height: 10px; margin-left: -28px; transform: translateY(-50%); background: var(--fg); border-radius: 3px 8px 2px 2px; }
+.lane.hero-lane .track .car { background: var(--red); box-shadow: 0 0 12px var(--red); }
+.lane.hero-lane .track .fill { background: linear-gradient(90deg, transparent, rgba(227,52,43,.55)); }
+.lane .time { font-family: var(--mono); font-size: 15px; text-align: right; font-variant-numeric: tabular-nums; }
+.strip-scale { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr) 72px; gap: 14px; }
+.strip-scale div { display: flex; justify-content: space-between; }
+@media (max-width: 600px) {
+  .lane, .strip-scale { grid-template-columns: minmax(0, 1fr) 64px; }
+  .lane .who { grid-column: 1 / -1; }
+  .strip-scale > :first-child { display: none; }
+}
+
+/* timeline */
+.tl { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: 0; }
+.tl li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 18px; padding-block: 14px; border-top: 1px solid var(--rule); }
+.tl .when { font-family: var(--mono); font-size: 13px; color: var(--muted); letter-spacing: .04em; padding-top: 2px; }
+.tl li.now .when { color: var(--red-soft); }
+.tl p { margin: 0; max-width: 62ch; }
+.tl li.now p { font-weight: 500; }
+@media (max-width: 520px) { .tl li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* claimed vs verified */
+.ledger { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ledger > div { border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.ledger h3 { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 500; }
+.ledger .seen h3 { color: var(--gas); }
+.ledger .open h3 { color: var(--amber); }
+.ledger ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.ledger li { color: var(--fg); }
+.ledger li::marker { color: var(--muted); }
+@media (max-width: 700px) { .ledger { grid-template-columns: minmax(0, 1fr); } }
+
+/* sources + footer */
+.sources { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.sources li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding-top: 10px; border-top: 1px solid var(--rule); }
+.sources a { overflow-wrap: anywhere; }
+@media (max-width: 520px) { .sources li { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+footer { margin-top: 80px; border-top: 1px solid var(--rule); padding-block: 24px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+.topnav { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 14px; border-bottom: 1px solid var(--rule); }
+.topnav b { font-family: var(--display); font-weight: 900; font-size: 22px; text-transform: uppercase; }
+.topnav b em { font-style: normal; color: var(--red); }
+.back { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.cta { display: inline-flex; margin-top: 8px; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topnav"><b>Roadster <em>Liftoff</em></b><a class="btn back" href="index.html">← Back to the 3D stunts</a></nav>
+  <div class="mast">
+    <span class="label live"><b>Fan page</b> · not affiliated with Tesla</span>
+    <span class="label">Oct 15, 2026 · SpaceX test site · McGregor, Texas</span>
+  </div>
+
+  <div class="hero">
+    <span class="label">Second-gen Roadster · unveiling night</span>
+    <h1>The Roadster<br><em>left the ground.</em></h1>
+    <p>After nearly nine years of delays, the new Roadster showed up at an outdoor demo, climbed a ramp on suction, hung upside down, then fired <strong>cold-gas thrusters</strong> to hop a lineup of cars and a semi-truck with a flip in the middle. Here is what happened, and what is still a promise.</p>
+    <a class="btn primary cta" href="index.html">Watch the stunts in 3D, or drive it yourself</a>
+  </div>
+</div>
+<div class="wrap">
+  <div class="figs">
+    <div class="fig"><span class="label">0–60 mph, claimed</span><span class="num">0.59<small>s</small></span><p>Tesla's figure for the top trim. No independent test yet.</p></div>
+    <div class="fig"><span class="label">Thruster nozzles</span><span class="num">10</span><p>Fed by what Musk called ultra high-pressure air tanks.</p></div>
+    <div class="fig"><span class="label">Trims</span><span class="num">3</span><p>Performance, Thrust and Rocket.</p></div>
+    <div class="fig"><span class="label">Since the 2017 reveal</span><span class="num">~9<small>yrs</small></span><p>Still no price and no production date.</p></div>
+  </div>
+
+  <section class="block" id="night">
+    <header>
+      <span class="label">The demo</span>
+      <h2>The night, beat by beat</h2>
+      <p>There was no driver in the car for the stunts. Reports say it was operated remotely.</p>
+    </header>
+    <div class="body">
+      <ol class="beats">
+        <li><span class="t">1</span><div><h3>Up the ramp on suction</h3><p>Fans underneath pulled the car onto a steep ramp, the same downforce trick racing cars have flirted with for decades.</p></div></li>
+        <li><span class="t">2</span><div><h3>Upside down</h3><p>The suction held the car inverted on the ramp before it let go.</p></div></li>
+        <li><span class="t">3</span><div><h3>Spin, flip, land</h3><p>It spun off the ramp, flipped, and used air jets to set itself down.</p></div></li>
+        <li><span class="t">4</span><div><h3>Over the lineup</h3><p>The finale: a launch over parked cars and a semi-truck, with a mid-air flip, and a clean landing on the far side.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="sim">
+    <header>
+      <span class="label">Under the hood of this page</span>
+      <h2>How the simulation works</h2>
+      <p>The jump above is computed, not keyframed. Masses and thrusts are our estimates, not Tesla figures.</p>
+    </header>
+    <div class="body">
+      <ol class="beats">
+        <li><span class="t">1</span><div><h3>A 1,900 kg body on four springs</h3><p>The car is a rigid body with real inertia for roll, pitch and yaw. Each wheel has its own spring and damper and a tyre that grips up to 1.15 g, so you can see the suspension unload during the spool and compress on landing.</p></div></li>
+        <li><span class="t">2</span><div><h3>Ten nozzles, each with its own force</h3><p>Four floor nozzles near the wheel arches (up to 18 kN each), four in the diffuser and two in the nose. Every nozzle pushes at its own position, so firing one side harder spins the car. Valves take about 40 ms to respond.</p></div></li>
+        <li><span class="t">3</span><div><h3>A flight computer flies the stunt</h3><p>The car on the night was remote-operated. Here a controller does the job. On the jump it lifts off, rolls 360° along the direction of travel, uses even bursts while the car is on its side to cancel sideways drift, holds the heading with the nose jets, and follows a glide path down to touch the ground at about 2 m/s.</p></div></li>
+        <li><span class="t">4</span><div><h3>The ramp: suction does the climbing</h3><p>Fans under the floor pull the car onto a curved wall with up to 30 kN, 1.6 times its weight. That is enough grip to drive up past vertical and pause upside down at about 12 m. Then, as in Tesla's video, it creeps on with the diffuser jets helping and tips off the end of the runway upside down. Past the runway it rolls 180° about its own length, an x-axis flip, so it comes up on its wheels facing the opposite way to the runway. It hovers slowly down on its floor jets, with the diffuser and nose jets holding position, settles at the foot of the ramp at under 1 m/s and drives away.</p></div></li>
+        <li><span class="t">5</span><div><h3>Sound from the numbers</h3><p>Nothing is recorded. The motor whine follows wheel speed, the hiss and roar follow total thrust, each valve pops as it opens, the fans whine with suction, and landings thump harder the faster the car comes down. Volume and stereo pan follow the camera.</p></div></li>
+        <li><span class="t">6</span><div><h3>Track Mode aero</h3><p>The wing button cycles the three modes from Tesla's video. Road stows the wing, High-Downforce raises and pitches it, Low-Drag raises it flat. Each mode changes the downforce in the simulation.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="trims">
+    <header>
+      <span class="label">The lineup</span>
+      <h2>Three trims, two of them add-ons</h2>
+      <p>Tesla treats Thrust and Rocket as augments stacked on the Performance car.</p>
+    </header>
+    <div class="body">
+      <div class="trims">
+        <div class="trim"><span class="tag base">Base car</span><h3>Performance</h3><p>The two-seat sports car itself. Everything else bolts on top of this.</p></div>
+        <div class="trim"><span class="tag aug">Augment</span><h3>Thrust</h3><p>Adds the cold-gas thruster system for extra launch and handling.</p></div>
+        <div class="trim rocket"><span class="tag track">Not road legal</span><h3>Rocket</h3><p>The full package. Tesla's own page reportedly says it is not approved for public roads.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="strip">
+    <header>
+      <span class="label">Drag strip</span>
+      <h2>How short is 0.59 seconds?</h2>
+      <p>Press Run. Each car covers 0–60 mph in its real claimed time, played at real speed.</p>
+    </header>
+    <div class="body">
+      <div class="strip">
+        <div class="strip-top">
+          <span class="label">0 → 60 mph · real time</span>
+          <button class="btn primary" id="raceBtn" type="button">Run 0–60</button>
+        </div>
+        <div class="lane hero-lane" data-time="0.59"><div class="who">2026 Roadster<span>claimed, top trim</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">0.59 s</div></div>
+        <div class="lane" data-time="1.9"><div class="who">2017 Roadster concept<span>claimed at reveal</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">1.90 s</div></div>
+        <div class="lane" data-time="3.9"><div class="who">2008 original Roadster<span>production car</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">3.90 s</div></div>
+        <div class="strip-scale label"><span></span><div><span>0 mph</span><span>60 mph</span></div><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="timeline">
+    <header>
+      <span class="label">The long road</span>
+      <h2>From concept to liftoff</h2>
+    </header>
+    <div class="body">
+      <ol class="tl">
+        <li><span class="when">2008</span><p>The original Roadster goes on sale. It is Tesla's first car.</p></li>
+        <li><span class="when">Nov 2017</span><p>The second-gen Roadster is revealed as a surprise at the Tesla Semi event, with a claimed 1.9 s 0–60.</p></li>
+        <li><span class="when">Feb 2018</span><p>Musk's own first-gen Roadster rides a Falcon Heavy into orbit around the Sun.</p></li>
+        <li><span class="when">Jun 2018</span><p>Musk teases a "SpaceX package" with about ten small cold-gas thrusters.</p></li>
+        <li><span class="when">Sep 28, 2026</span><p>The Oct 1 unveiling is called off for weather. Tesla says the show can only be held outdoors.</p></li>
+        <li class="now"><span class="when">Oct 15, 2026</span><p>The unveiling happens at a SpaceX test site in Texas, and the car leaves the ground.</p></li>
+        <li><span class="when">2027?</span><p>Musk has pointed to production starting in 2027. Tesla has not confirmed a date or a price.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="ledger">
+    <header>
+      <span class="label">Reality check</span>
+      <h2>Seen vs. still a promise</h2>
+      <p>The demo was real. Most of the numbers come from Tesla and Musk.</p>
+    </header>
+    <div class="body">
+      <div class="ledger">
+        <div class="seen">
+          <h3>Seen on the night</h3>
+          <ul>
+            <li>A car climbing a ramp on suction and hanging upside down</li>
+            <li>A thruster-assisted hop over cars and a semi, with a flip</li>
+            <li>Three trims named: Performance, Thrust, Rocket</li>
+          </ul>
+        </div>
+        <div class="open">
+          <h3>Not yet shown</h3>
+          <ul>
+            <li>Sustained flight. This was a hop, not a flight</li>
+            <li>A human driving it through the stunts</li>
+            <li>Independent tests of the 0.59 s figure</li>
+            <li>A price, a production date, or a street-legal Rocket</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="sources">
+    <header>
+      <span class="label">Sources</span>
+      <h2>Read the coverage</h2>
+    </header>
+    <div class="body">
+      <ul class="sources">
+        <li><span class="label">CNN</span><a href="https://edition.cnn.com/2026/10/15/business/tesla-unveils-what-it-says-is-a-flying-car" target="_blank" rel="noopener">Tesla unveils what it says is a flying car</a></li>
+        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/15/tesla-unveils-cyberfied-new-roadster-kickflip/" target="_blank" rel="noopener">Tesla unveils Cyberfied new Roadster that can kickflip</a></li>
+        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/13/tesla-roadster-event-thursday-nine-years-delays/" target="_blank" rel="noopener">Roadster event set after nearly 9 years of delays</a></li>
+        <li><span class="label">Dezeen</span><a href="https://www.dezeen.com/2026/10/16/tesla-launches-flying-roadster-concept-car/" target="_blank" rel="noopener">Tesla launches flying Roadster concept car</a></li>
+        <li><span class="label">Fox Business</span><a href="https://www.foxbusiness.com/technology/teslas-new-roadster-makes-flying-debut-hitting-60-mph-under-second" target="_blank" rel="noopener">New Roadster takes flight at SpaceX facility</a></li>
+        <li><span class="label">Wikipedia</span><a href="https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)" target="_blank" rel="noopener">Tesla Roadster (second generation)</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>An unofficial fan page made the day after the unveiling. Not affiliated with or endorsed by Tesla or SpaceX. The 3D car is a fan model based on Tesla's launch photos and video, not official design data, and the animation is an illustration, not footage.</p>
+    <span class="label">Updated Oct 16, 2026</span>
+  </footer>
+</div>
+<script>
+(() => {
+  // drag strip: constant acceleration, so distance grows with time squared
+  const lanes = [...document.querySelectorAll(".lane")];
+  const raceBtn = document.getElementById("raceBtn");
+  let racing = false;
+  raceBtn.addEventListener("click", () => {
+    if (racing) return; racing = true; raceBtn.disabled = true;
+    const start = performance.now() + 500;
+    lanes.forEach(l => { l.querySelector(".car").style.left = "28px"; l.querySelector(".fill").style.width = "0%"; l.querySelector(".time").textContent = "0.00 s"; });
+    function tick(now) {
+      let done = true;
+      for (const l of lanes) {
+        const T = parseFloat(l.dataset.time), el = Math.max(0, (now - start) / 1000), p = Math.min(1, el / T);
+        if (p < 1) done = false;
+        const pos = p * p;
+        l.querySelector(".car").style.left = `calc(28px + (100% - 28px) * ${pos})`;
+        l.querySelector(".fill").style.width = (pos * 100) + "%";
+        l.querySelector(".time").textContent = (p < 1 ? el : T).toFixed(2) + " s";
+      }
+      if (!done) requestAnimationFrame(tick); else { racing = false; raceBtn.disabled = false; raceBtn.textContent = "Run again"; }
+    }
+    requestAnimationFrame(tick);
+  });
+})();
+</script>
+</body>
+</html>

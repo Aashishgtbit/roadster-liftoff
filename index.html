@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Unofficial fan page on the Oct 15, 2026 Tesla Roadster unveiling: two physics-simulated 3D stunts, a drivable game mode and live synthesised sound.">
+<meta name="description" content="Unofficial fan app for the Oct 15, 2026 Tesla Roadster unveiling: two physics-simulated 3D stunts and a drivable game with live synthesised sound.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Roadster Liftoff</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -197,32 +197,85 @@ footer { margin-top: 80px; border-top: 1px solid var(--rule); padding-block: 24p
 footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
 
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+/* ---------- the app: one full-window screen ---------- */
+html, body { height: 100%; }
+body { overflow: hidden; }
+.app { height: 100%; display: flex; flex-direction: column; background: var(--night); }
+.bar { position: relative; z-index: 5; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 18px; padding: 10px var(--gutter); background: linear-gradient(180deg, rgba(9,13,24,.98), rgba(9,13,24,.9)); border-bottom: 1px solid var(--rule); }
+.brand { display: flex; align-items: baseline; gap: 12px; margin-right: auto; min-width: 0; }
+.brand b { font-family: var(--display); font-weight: 900; font-size: 24px; letter-spacing: .01em; text-transform: uppercase; white-space: nowrap; }
+.brand b em { font-style: normal; color: var(--red); }
+.bar .stunts { display: flex; gap: 4px; padding: 4px; margin: 0; background: var(--night-2); border: 1px solid var(--rule); border-radius: 12px; }
+.bar .stunts .label { display: none; }
+.bar .tab { padding: 7px 14px; border: 0; border-radius: 9px; background: transparent; font-size: 14px; }
+.bar { flex-wrap: nowrap; }
+.bar .stunts { margin-inline: auto; }
+.brand { margin-right: 0; flex: 1; }
+.bar-actions { flex: 1; justify-content: flex-end; }
+.bar .tab:hover { background: rgba(255,255,255,.04); }
+.bar .tab[aria-selected="true"] { background: var(--rule); box-shadow: inset 0 -2px 0 var(--red); }
+.bar-actions { display: flex; gap: 8px; }
+.btn.icon { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+.btn.icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn.ghost { background: transparent; }
+.btn { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 8px; transition: border-color .15s, color .15s, background .15s; }
+.stage { flex: 1; min-height: 0; height: auto; border: 0; }
+#scene:focus { outline: none; }
+.stage-ctl { top: auto; bottom: 16px; right: var(--gutter); left: auto; flex-wrap: nowrap; }
+.hud { border-radius: 10px; background: rgba(9,13,24,.55); }
+.stage-note { left: var(--gutter); right: auto; bottom: 22px; }
+.btn.icon.fs-float { position: absolute; top: 14px; right: var(--gutter); z-index: 4; display: none; }
+.app.expanded .bar { display: none; }
+.app.expanded .btn.icon.fs-float { display: inline-flex; }
+.stage.driving .hud { display: none; }
+.g-panel { top: 14px; border-radius: 12px; background: rgba(9,13,24,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); grid-template-columns: auto 1fr; column-gap: 18px; align-items: center; min-width: min(460px, 86vw); }
+.g-speed { grid-row: span 3; display: grid; justify-items: center; line-height: 1; padding-right: 16px; border-right: 1px solid var(--rule); }
+.g-speed b { font-family: var(--display); font-weight: 800; font-size: 44px; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: center; }
+.g-toast { top: 140px; }
+.g-help { transition: opacity .6s; }
+.game.seasoned .g-help { opacity: 0; }
+.stage.driving .stage-ctl { bottom: 16px; }
+@media (max-width: 900px) { .bar .tab small { display: none; } .stage-ctl .btn.icon span { display: none; } .stage-ctl .btn.icon { padding: 9px; } }
+@media (max-width: 1100px) { .brand .label { display: none; } }
+@media (max-width: 640px) {
+  .bar { gap: 8px; padding-block: 8px; flex-wrap: wrap; }
+  .brand { flex: 1 0 auto; }
+  .brand .label { display: none; }
+  .bar .stunts { order: 3; width: 100%; justify-content: space-between; }
+  .bar .tab { flex: 1; text-align: center; justify-items: center; padding: 7px 6px; }
+  .bar-actions .btn.icon span { display: none; }
+  .bar-actions .btn.icon { padding: 9px; }
+  .stage-ctl { top: 14px; bottom: auto; right: var(--gutter); left: auto; }
+  .stage-note { display: none; }
+  .hud { top: 60px; }
+  .stage.driving .stage-ctl { top: auto; bottom: 86px; }
+  .g-panel, .stage.driving .g-panel { top: 10px; min-width: 0; width: calc(100% - 2 * var(--gutter)); }
+  .stage.driving .g-toast { top: 120px; }
+  .g-speed b { font-size: 34px; }
+}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <div class="mast">
-    <span class="label live"><b>Fan page</b> · not affiliated with Tesla</span>
-    <span class="label">Oct 15, 2026 · SpaceX test site · McGregor, Texas</span>
+<div class="app" id="app">
+<header class="bar">
+  <div class="brand"><b>Roadster <em>Liftoff</em></b><span class="label">Fan-made · not affiliated with Tesla</span></div>
+  <nav class="stunts" role="tablist" aria-label="Choose a stunt">
+  <button class="tab" title="Roll over five cars" type="button" role="tab" data-stunt="jump" aria-selected="true">Lineup jump</button>
+  <button class="tab" title="Your turn: bust, fly, race the clock" type="button" role="tab" data-stunt="drive" aria-selected="false">Drive it</button>
+  <button class="tab" title="Up the wall, x-axis flip, drive away" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang</button>
+  </nav>
+  <div class="bar-actions">
+    <a class="btn icon ghost" href="about.html" title="The unveiling, the trims, the timeline and how this page works"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/></svg><span>The story</span></a>
+    <button class="btn icon" id="soundBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7"/></svg><span>Sound: off</span></button>
+    <button class="btn icon" id="fsBtn" type="button" aria-pressed="false" title="Full screen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Full screen</span></button>
   </div>
-
-  <div class="hero">
-    <span class="label">Second-gen Roadster · unveiling night</span>
-    <h1>The Roadster<br><em>left the ground.</em></h1>
-    <p>After nearly nine years of delays, the new Roadster showed up at an outdoor demo, climbed a ramp on suction, hung upside down, then fired <strong>cold-gas thrusters</strong> to hop a lineup of cars and a semi-truck with a flip in the middle. Here is what happened, and what is still a promise.</p>
-  </div>
-</div>
-
-<div class="wrap stunts" role="tablist" aria-label="Choose a stunt">
-  <span class="label">Choose a stunt</span>
-  <button class="tab" type="button" role="tab" data-stunt="jump" aria-selected="true">Lineup jump<small>roll over five cars</small></button>
-  <button class="tab" type="button" role="tab" data-stunt="drive" aria-selected="false">Drive it<small>your turn: bust, fly, race the clock</small></button>
-  <button class="tab" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang<small>up the wall, x-axis flip, drive away</small></button>
-</div>
-<div class="stage" id="stage">
+</header>
+<main class="stage" id="stage">
+  <button class="btn icon fs-float" id="fsFloat" type="button" title="Exit full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span>Exit full screen</span></button>
   <div class="game" id="gameUI" hidden>
     <div class="g-panel">
+      <div class="g-speed"><b id="gameSpeed">0</b><span class="label">km/h</span></div>
       <div class="g-fuel"><span class="label">Fuel</span><div class="g-bar"><i id="fuelBar"></i></div><b id="fuelNum">60</b></div>
       <div class="g-stats"><span><span class="label">Score</span> <b id="gameScore">0</b></span><span><span class="label">Time</span> <b id="gameTime">0.0 s</b></span><span><span class="label">Best</span> <b id="gameBest">—</b></span></div>
       <div class="g-stats"><span><span class="label">To finish</span> <b id="gameLeft">330 m</b></span><span><span class="label">Damage</span> <b id="gameDamage" class="dmg">○○○</b></span><span><span class="label">Course</span> <b id="gameCourse">#0</b></span></div>
@@ -255,160 +308,13 @@ footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
     <dt>Suction</dt><dd id="hudFan">off</dd>
   </dl>
   <div class="stage-ctl">
-    <button class="btn" id="soundBtn" type="button" aria-pressed="false">Sound: off</button>
-    <button class="btn" id="wingBtn" type="button" aria-pressed="true">Wing: High-Downforce</button>
-    <button class="btn" id="camBtn" type="button">Free look</button>
-    <button class="btn" id="pauseBtn" type="button">Pause</button>
-    <button class="btn primary" id="replayBtn" type="button">Replay</button>
+    <button class="btn icon" id="wingBtn" type="button" aria-pressed="true" title="Cycle the wing: Road, High-Downforce, Low-Drag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M6 8l-1 6M18 8l1 6M9 14h6"/></svg><span>Wing: High-Downforce</span></button>
+    <button class="btn icon" id="camBtn" type="button" title="Drag to orbit the car"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></svg><span>Free look</span></button>
+    <button class="btn icon" id="pauseBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><span>Pause</span></button>
+    <button class="btn icon primary" id="replayBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg><span>Replay</span></button>
   </div>
   <div class="stage-note" id="stageNote">Fan model from Tesla's photos · simulated physics and sound, not footage</div>
-</div>
-
-<div class="wrap">
-  <div class="figs">
-    <div class="fig"><span class="label">0–60 mph, claimed</span><span class="num">0.59<small>s</small></span><p>Tesla's figure for the top trim. No independent test yet.</p></div>
-    <div class="fig"><span class="label">Thruster nozzles</span><span class="num">10</span><p>Fed by what Musk called ultra high-pressure air tanks.</p></div>
-    <div class="fig"><span class="label">Trims</span><span class="num">3</span><p>Performance, Thrust and Rocket.</p></div>
-    <div class="fig"><span class="label">Since the 2017 reveal</span><span class="num">~9<small>yrs</small></span><p>Still no price and no production date.</p></div>
-  </div>
-
-  <section class="block" id="night">
-    <header>
-      <span class="label">The demo</span>
-      <h2>The night, beat by beat</h2>
-      <p>There was no driver in the car for the stunts. Reports say it was operated remotely.</p>
-    </header>
-    <div class="body">
-      <ol class="beats">
-        <li><span class="t">1</span><div><h3>Up the ramp on suction</h3><p>Fans underneath pulled the car onto a steep ramp, the same downforce trick racing cars have flirted with for decades.</p></div></li>
-        <li><span class="t">2</span><div><h3>Upside down</h3><p>The suction held the car inverted on the ramp before it let go.</p></div></li>
-        <li><span class="t">3</span><div><h3>Spin, flip, land</h3><p>It spun off the ramp, flipped, and used air jets to set itself down.</p></div></li>
-        <li><span class="t">4</span><div><h3>Over the lineup</h3><p>The finale: a launch over parked cars and a semi-truck, with a mid-air flip, and a clean landing on the far side.</p></div></li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="block" id="sim">
-    <header>
-      <span class="label">Under the hood of this page</span>
-      <h2>How the simulation works</h2>
-      <p>The jump above is computed, not keyframed. Masses and thrusts are our estimates, not Tesla figures.</p>
-    </header>
-    <div class="body">
-      <ol class="beats">
-        <li><span class="t">1</span><div><h3>A 1,900 kg body on four springs</h3><p>The car is a rigid body with real inertia for roll, pitch and yaw. Each wheel has its own spring and damper and a tyre that grips up to 1.15 g, so you can see the suspension unload during the spool and compress on landing.</p></div></li>
-        <li><span class="t">2</span><div><h3>Ten nozzles, each with its own force</h3><p>Four floor nozzles near the wheel arches (up to 18 kN each), four in the diffuser and two in the nose. Every nozzle pushes at its own position, so firing one side harder spins the car. Valves take about 40 ms to respond.</p></div></li>
-        <li><span class="t">3</span><div><h3>A flight computer flies the stunt</h3><p>The car on the night was remote-operated. Here a controller does the job. On the jump it lifts off, rolls 360° along the direction of travel, uses even bursts while the car is on its side to cancel sideways drift, holds the heading with the nose jets, and follows a glide path down to touch the ground at about 2 m/s.</p></div></li>
-        <li><span class="t">4</span><div><h3>The ramp: suction does the climbing</h3><p>Fans under the floor pull the car onto a curved wall with up to 30 kN, 1.6 times its weight. That is enough grip to drive up past vertical and pause upside down at about 12 m. Then, as in Tesla's video, it creeps on with the diffuser jets helping and tips off the end of the runway upside down. Past the runway it rolls 180° about its own length, an x-axis flip, so it comes up on its wheels facing the opposite way to the runway. It hovers slowly down on its floor jets, with the diffuser and nose jets holding position, settles at the foot of the ramp at under 1 m/s and drives away.</p></div></li>
-        <li><span class="t">5</span><div><h3>Sound from the numbers</h3><p>Nothing is recorded. The motor whine follows wheel speed, the hiss and roar follow total thrust, each valve pops as it opens, the fans whine with suction, and landings thump harder the faster the car comes down. Volume and stereo pan follow the camera.</p></div></li>
-        <li><span class="t">6</span><div><h3>Track Mode aero</h3><p>The wing button cycles the three modes from Tesla's video. Road stows the wing, High-Downforce raises and pitches it, Low-Drag raises it flat. Each mode changes the downforce in the simulation.</p></div></li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="block" id="trims">
-    <header>
-      <span class="label">The lineup</span>
-      <h2>Three trims, two of them add-ons</h2>
-      <p>Tesla treats Thrust and Rocket as augments stacked on the Performance car.</p>
-    </header>
-    <div class="body">
-      <div class="trims">
-        <div class="trim"><span class="tag base">Base car</span><h3>Performance</h3><p>The two-seat sports car itself. Everything else bolts on top of this.</p></div>
-        <div class="trim"><span class="tag aug">Augment</span><h3>Thrust</h3><p>Adds the cold-gas thruster system for extra launch and handling.</p></div>
-        <div class="trim rocket"><span class="tag track">Not road legal</span><h3>Rocket</h3><p>The full package. Tesla's own page reportedly says it is not approved for public roads.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="strip">
-    <header>
-      <span class="label">Drag strip</span>
-      <h2>How short is 0.59 seconds?</h2>
-      <p>Press Run. Each car covers 0–60 mph in its real claimed time, played at real speed.</p>
-    </header>
-    <div class="body">
-      <div class="strip">
-        <div class="strip-top">
-          <span class="label">0 → 60 mph · real time</span>
-          <button class="btn primary" id="raceBtn" type="button">Run 0–60</button>
-        </div>
-        <div class="lane hero-lane" data-time="0.59"><div class="who">2026 Roadster<span>claimed, top trim</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">0.59 s</div></div>
-        <div class="lane" data-time="1.9"><div class="who">2017 Roadster concept<span>claimed at reveal</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">1.90 s</div></div>
-        <div class="lane" data-time="3.9"><div class="who">2008 original Roadster<span>production car</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">3.90 s</div></div>
-        <div class="strip-scale label"><span></span><div><span>0 mph</span><span>60 mph</span></div><span></span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="timeline">
-    <header>
-      <span class="label">The long road</span>
-      <h2>From concept to liftoff</h2>
-    </header>
-    <div class="body">
-      <ol class="tl">
-        <li><span class="when">2008</span><p>The original Roadster goes on sale. It is Tesla's first car.</p></li>
-        <li><span class="when">Nov 2017</span><p>The second-gen Roadster is revealed as a surprise at the Tesla Semi event, with a claimed 1.9 s 0–60.</p></li>
-        <li><span class="when">Feb 2018</span><p>Musk's own first-gen Roadster rides a Falcon Heavy into orbit around the Sun.</p></li>
-        <li><span class="when">Jun 2018</span><p>Musk teases a "SpaceX package" with about ten small cold-gas thrusters.</p></li>
-        <li><span class="when">Sep 28, 2026</span><p>The Oct 1 unveiling is called off for weather. Tesla says the show can only be held outdoors.</p></li>
-        <li class="now"><span class="when">Oct 15, 2026</span><p>The unveiling happens at a SpaceX test site in Texas, and the car leaves the ground.</p></li>
-        <li><span class="when">2027?</span><p>Musk has pointed to production starting in 2027. Tesla has not confirmed a date or a price.</p></li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="block" id="ledger">
-    <header>
-      <span class="label">Reality check</span>
-      <h2>Seen vs. still a promise</h2>
-      <p>The demo was real. Most of the numbers come from Tesla and Musk.</p>
-    </header>
-    <div class="body">
-      <div class="ledger">
-        <div class="seen">
-          <h3>Seen on the night</h3>
-          <ul>
-            <li>A car climbing a ramp on suction and hanging upside down</li>
-            <li>A thruster-assisted hop over cars and a semi, with a flip</li>
-            <li>Three trims named: Performance, Thrust, Rocket</li>
-          </ul>
-        </div>
-        <div class="open">
-          <h3>Not yet shown</h3>
-          <ul>
-            <li>Sustained flight. This was a hop, not a flight</li>
-            <li>A human driving it through the stunts</li>
-            <li>Independent tests of the 0.59 s figure</li>
-            <li>A price, a production date, or a street-legal Rocket</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="sources">
-    <header>
-      <span class="label">Sources</span>
-      <h2>Read the coverage</h2>
-    </header>
-    <div class="body">
-      <ul class="sources">
-        <li><span class="label">CNN</span><a href="https://edition.cnn.com/2026/10/15/business/tesla-unveils-what-it-says-is-a-flying-car" target="_blank" rel="noopener">Tesla unveils what it says is a flying car</a></li>
-        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/15/tesla-unveils-cyberfied-new-roadster-kickflip/" target="_blank" rel="noopener">Tesla unveils Cyberfied new Roadster that can kickflip</a></li>
-        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/13/tesla-roadster-event-thursday-nine-years-delays/" target="_blank" rel="noopener">Roadster event set after nearly 9 years of delays</a></li>
-        <li><span class="label">Dezeen</span><a href="https://www.dezeen.com/2026/10/16/tesla-launches-flying-roadster-concept-car/" target="_blank" rel="noopener">Tesla launches flying Roadster concept car</a></li>
-        <li><span class="label">Fox Business</span><a href="https://www.foxbusiness.com/technology/teslas-new-roadster-makes-flying-debut-hitting-60-mph-under-second" target="_blank" rel="noopener">New Roadster takes flight at SpaceX facility</a></li>
-        <li><span class="label">Wikipedia</span><a href="https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)" target="_blank" rel="noopener">Tesla Roadster (second generation)</a></li>
-      </ul>
-    </div>
-  </section>
-
-  <footer>
-    <p>An unofficial fan page made the day after the unveiling. Not affiliated with or endorsed by Tesla or SpaceX. The 3D car is a fan model based on Tesla's launch photos and video, not official design data, and the animation is an illustration, not footage.</p>
-    <span class="label">Updated Oct 16, 2026</span>
-  </footer>
+</main>
 </div>
 
 <script type="importmap">
@@ -1205,7 +1111,7 @@ const rampGroup = new THREE.Group(); rampGroup.visible = false; scene.add(rampGr
 const FINISH_X = 330, CRASH_SPEED = 9.7, MAX_CRASHES = 3;
 const $ = id => document.getElementById(id);
 const gameUI = $("gameUI"), gameToast = $("gameToast"), gameOver = $("gameOver");
-const fuelBar = $("fuelBar"), fuelNum = $("fuelNum"), gameScore = $("gameScore"), gameLeft = $("gameLeft"), gameTime = $("gameTime"), gameBest = $("gameBest"), gameCourse = $("gameCourse"), gameDamage = $("gameDamage");
+const gameSpeed = $("gameSpeed"), fuelBar = $("fuelBar"), fuelNum = $("fuelNum"), gameScore = $("gameScore"), gameLeft = $("gameLeft"), gameTime = $("gameTime"), gameBest = $("gameBest"), gameCourse = $("gameCourse"), gameDamage = $("gameDamage");
 const goTitle = $("goTitle"), goScore = $("goScore"), goTime = $("goTime"), goBusts = $("goBusts"), goCans = $("goCans"), goBest = $("goBest"), goNew = $("goNew");
 const course = new THREE.Group(); course.visible = false; scene.add(course);
 const obstacles = new THREE.Group(); course.add(obstacles);
@@ -1271,8 +1177,46 @@ function buildCourse(seed) {
     }
     if (x < FINISH_X - 20) can(x - 10, 0.95, (R() - 0.5) * 4);
   }
+  game.boxes.push(...BARRIERS);
   st.boxes = game.boxes;
   gameCourse.textContent = "#" + seed % 10000;
+}
+// the track is boxed in: concrete barriers down both sides, a wall behind the start and a run-off wall past the finish
+const TRACK_HW = 9.6, RUNOFF = 70;
+const BARRIERS = [
+  { id: "barrier-left", kind: "barrier", x0: -40, x1: FINISH_X + RUNOFF, y0: 0, y1: 1.05, z0: -TRACK_HW - 0.8, z1: -TRACK_HW },
+  { id: "barrier-right", kind: "barrier", x0: -40, x1: FINISH_X + RUNOFF, y0: 0, y1: 1.05, z0: TRACK_HW, z1: TRACK_HW + 0.8 },
+  { id: "barrier-start", kind: "barrier", x0: -41, x1: -40, y0: 0, y1: 2.2, z0: -TRACK_HW - 0.8, z1: TRACK_HW + 0.8 },
+  { id: "barrier-end", kind: "barrier", x0: FINISH_X + RUNOFF, x1: FINISH_X + RUNOFF + 1, y0: 0, y1: 2.2, z0: -TRACK_HW - 0.8, z1: TRACK_HW + 0.8 },
+];
+{
+  const concrete = canvasTex(512, 64, (x, w, h) => {
+    x.fillStyle = "#b9bdc4"; x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1600; i++) { const v = 150 + Math.random() * 60 | 0; x.fillStyle = `rgba(${v},${v},${v + 4},.5)`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+    for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? "#e9ebee" : "#d42a1f"; x.fillRect(i * 64, 0, 64, 12); }
+    x.fillStyle = "rgba(0,0,0,.25)"; for (let i = 0; i <= 8; i++) x.fillRect(i * 64, 0, 2, h);
+  });
+  concrete.wrapS = THREE.RepeatWrapping;
+  const L = FINISH_X + RUNOFF + 40, led = new THREE.MeshStandardMaterial({ color: 0x220000, emissive: 0xff2414, emissiveIntensity: 2.2 });
+  for (const s of [-1, 1]) {
+    const t = concrete.clone(); t.needsUpdate = true; t.repeat.set(L / 8, 1);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(L, 1.05, 0.8), new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 }));
+    m.position.set(-40 + L / 2, 0.525, s * (TRACK_HW + 0.4)); m.castShadow = m.receiveShadow = true; course.add(m);
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(L, 0.04, 0.05), led); strip.position.set(-40 + L / 2, 0.86, s * (TRACK_HW - 0.02)); course.add(strip);
+  }
+  for (const x of [-40.5, FINISH_X + RUNOFF + 0.5]) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2.2, 2 * TRACK_HW + 1.6), MAT.wall); m.position.set(x, 1.1, 0); m.castShadow = m.receiveShadow = true; course.add(m);
+  }
+  // grandstands with crowd lights beyond the barriers, so the view never runs into empty dark
+  const standMat = new THREE.MeshStandardMaterial({ color: 0x1a2030, roughness: 0.9 }), dots = new THREE.MeshBasicMaterial({ color: 0xffe7b8 });
+  const dotGeo = new THREE.SphereGeometry(0.07, 6, 4);
+  for (let x = -20; x < FINISH_X + RUNOFF; x += 48) for (const s of [-1, 1]) {
+    const g = new THREE.Group(); g.position.set(x, 0, s * 20);
+    for (let k = 0; k < 5; k++) { const step = new THREE.Mesh(new THREE.BoxGeometry(30, 1, 1.6), standMat); step.position.set(0, 0.5 + k, s * k * 1.6); step.receiveShadow = true; g.add(step); }
+    const crowd = new THREE.InstancedMesh(dotGeo, dots, 60), m4 = new THREE.Matrix4();
+    for (let i = 0; i < 60; i++) { const k = i % 5; m4.makeTranslation((Math.random() - 0.5) * 28, 1.25 + k, s * k * 1.6 + (Math.random() - 0.5) * 0.6); crowd.setMatrixAt(i, m4); }
+    g.add(crowd); course.add(g);
+  }
 }
 // static parts of the course: finish arch, lane markings, cones, lamp posts
 {
@@ -1288,7 +1232,7 @@ function buildCourse(seed) {
   for (let xx = 0; xx < FINISH_X + 20 && k < 220; xx += 3.4) for (const z of [-3.6, 3.6]) { if (k < 220) { m4.makeTranslation(xx, 0.006, z); dashes.setMatrixAt(k++, m4); } }
   dashes.count = k; course.add(dashes);
   const cones = new THREE.InstancedMesh(new THREE.ConeGeometry(0.16, 0.5, 14).translate(0, 0.25, 0), new THREE.MeshStandardMaterial({ color: 0xff5a14, roughness: 0.55 }), 80); k = 0;
-  for (let xx = 0; xx < FINISH_X + 10 && k < 80; xx += 9) for (const z of [-9.2, 9.2]) { if (k < 80) { m4.makeTranslation(xx, 0, z); cones.setMatrixAt(k++, m4); } }
+  for (let xx = 0; xx < FINISH_X + 10 && k < 80; xx += 9) for (const z of [-8.6, 8.6]) { if (k < 80) { m4.makeTranslation(xx, 0, z); cones.setMatrixAt(k++, m4); } }
   cones.count = k; course.add(cones);
   const lamp = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0xeef4ff, emissiveIntensity: 5 });
   for (let xx = 40; xx < FINISH_X; xx += 55) for (const z of [-13, 13]) {
@@ -1306,7 +1250,7 @@ headlight.position.set(2.2, 0.5, 0); headlight.target.position.set(14, -0.4, 0);
 
 function gameReset(newLayout) {
   if (newLayout || !game.seed) buildCourse(1 + Math.floor(Math.random() * 2147483000));
-  for (const b of game.boxes) { b.gone = false; b.hitT = 0; b.g.visible = true; }
+  for (const b of game.boxes) { b.gone = false; b.hitT = 0; if (b.g) b.g.visible = true; }
   for (const c of game.cans) { c.got = false; c.g.visible = true; }
   for (const d of game.debris) course.remove(d.m); game.debris = [];
   Object.assign(game, { started: false, over: false, t: 0, busts: 0, cansGot: 0, crashes: 0, best: 0, shake: 0 });
@@ -1333,6 +1277,7 @@ function gameBust(b, v) {
 }
 function gameHit(b, v) {
   if (st.scn !== "drive" || game.over) return;
+  if (b.kind === "barrier") { if (snd.on && v > 5) snd.burst(0.25, "bandpass", 1400, Math.min(0.5, v / 30)); game.shake = Math.min(0.3, v / 40); return; }   // scrape along it
   if (b.kind === "wall" && v > CRASH_SPEED) {   // a crash: costs fuel and points; three wreck the car
     game.crashes++; game.shake = 0.6; st.fuel = Math.max(0, st.fuel - 15);
     if (snd.on) { snd.thump(1); snd.burst(0.6, "lowpass", 700, 0.9); snd.burst(0.3, "highpass", 3000, 0.4); }
@@ -1401,6 +1346,8 @@ function gameUpdate(dt) {
   fuelBar.style.width = st.fuel.toFixed(1) + "%"; fuelBar.classList.toggle("low", st.fuel < 20);
   fuelNum.textContent = Math.round(st.fuel);
   gameScore.textContent = score();
+  gameSpeed.textContent = Math.round(st.vel.length() * 3.6);
+  if (game.started) gameUI.classList.toggle("seasoned", game.t > 8);
   gameLeft.textContent = Math.max(0, Math.round(FINISH_X - st.pos.x)) + " m";
   gameTime.textContent = game.t.toFixed(1) + " s";
   gameBest.textContent = bestRec.time ? bestRec.time.toFixed(1) + " s" : "—";
@@ -1485,7 +1432,7 @@ function setStunt(scn) {
   lineup.visible = scn === "jump"; rampGroup.visible = scn === "ramp";
   const drv = scn === "drive";
   course.visible = followLight.visible = headlight.visible = drv; gameUI.hidden = !drv; stage.classList.toggle("driving", drv);
-  st.boxes = []; if (drv) { gameReset(false); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } canvas.focus({ preventScroll: true }); }
+  st.boxes = []; if (drv) { gameReset(false); if (!playing) { playing = true; pauseBtn.lastElementChild.textContent = "Pause"; } canvas.focus({ preventScroll: true }); }
   for (const b of stuntBtns) b.setAttribute("aria-selected", String(b.dataset.stunt === scn));
   if (!playing) { simulate(1 / 60); updateCamera(0); }
   dirty = true;
@@ -1548,7 +1495,7 @@ controls.minDistance = 3.5; controls.maxDistance = 70; controls.maxPolarAngle = 
 canvas.style.touchAction = "";
 function setFree(on) {
   free = on; controls.enabled = on; camBtn.setAttribute("aria-pressed", on ? "true" : "false");
-  camBtn.textContent = on ? "Cinematic" : "Free look";
+  camBtn.lastElementChild.textContent = on ? "Cinematic" : "Free look";
   canvas.classList.toggle("free", on); canvas.style.touchAction = on ? "none" : "pan-y";
   if (on) controls.target.copy(car.position);
   else { camPos.copy(camera.position); camLook.copy(controls.target); }
@@ -1645,9 +1592,9 @@ function soundUpdate() {
   sndPrev.phase = st.phase; sndPrev.wing = wing.userData.mode;
 }
 function setSound(on) {
-  if (on && !snd.ctx && !soundInit()) { soundBtn.textContent = "Sound unavailable"; soundBtn.disabled = true; return; }
+  if (on && !snd.ctx && !soundInit()) { soundBtn.lastElementChild.textContent = "Sound unavailable"; soundBtn.disabled = true; return; }
   snd.on = on;
-  soundBtn.textContent = on ? "Sound: on" : "Sound: off"; soundBtn.setAttribute("aria-pressed", String(on));
+  soundBtn.lastElementChild.textContent = on ? "Sound: on" : "Sound: off"; soundBtn.setAttribute("aria-pressed", String(on));
   if (!snd.ctx) return;
   if (on) snd.ctx.resume();
   snd.master.gain.setTargetAtTime(on ? 0.9 : 0, snd.ctx.currentTime, 0.08);
@@ -1672,18 +1619,33 @@ new ResizeObserver(resize).observe(stage);
 new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stage);
 
 /* ---------- controls ---------- */
-pauseBtn.addEventListener("click", () => { playing = !playing; pauseBtn.textContent = playing ? "Pause" : "Play"; });
-replayBtn.addEventListener("click", () => { restart(st.scn); if (st.scn === "drive") gameReset(false); simulate(0); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } });
+pauseBtn.addEventListener("click", () => { playing = !playing; pauseBtn.lastElementChild.textContent = playing ? "Pause" : "Play"; });
+replayBtn.addEventListener("click", () => { restart(st.scn); if (st.scn === "drive") gameReset(false); simulate(0); if (!playing) { playing = true; pauseBtn.lastElementChild.textContent = "Pause"; } });
 camBtn.addEventListener("click", () => setFree(!free));
 soundBtn.addEventListener("click", () => setSound(!snd.on));
+// full screen: the whole app goes full screen; where the browser refuses, the top bar folds away instead
+const appEl = document.getElementById("app"), fsBtn = document.getElementById("fsBtn"), fsFloat = document.getElementById("fsFloat");
+const fsOn = () => !!document.fullscreenElement || appEl.classList.contains("expanded");
+function syncFs() { const on = fsOn(); fsBtn.setAttribute("aria-pressed", String(on)); fsBtn.lastElementChild.textContent = on ? "Exit full screen" : "Full screen"; appEl.classList.toggle("is-full", on); dirty = true; }
+async function toggleFs() {
+  if (fsOn()) { if (document.fullscreenElement) await document.exitFullscreen().catch(() => {}); appEl.classList.remove("expanded"); }
+  else { try { await appEl.requestFullscreen({ navigationUI: "hide" }); } catch { appEl.classList.add("expanded"); } }
+  syncFs();
+}
+fsBtn.addEventListener("click", toggleFs); fsFloat.addEventListener("click", toggleFs);
+document.addEventListener("fullscreenchange", syncFs);
+window.addEventListener("keydown", e => {
+  if (e.code === "KeyF" && !e.metaKey && !e.ctrlKey) toggleFs();
+  if (e.code === "Escape" && appEl.classList.contains("expanded")) { appEl.classList.remove("expanded"); syncFs(); }
+});
 for (const b of stuntBtns) b.addEventListener("click", () => setStunt(b.dataset.stunt));
-wingBtn.addEventListener("click", () => { const u = wing.userData; u.mode = (u.mode + 1) % 3; wingBtn.textContent = "Wing: " + WING_MODES[u.mode]; wingBtn.setAttribute("aria-pressed", String(u.mode > 0)); if (!playing) { for (let i = 0; i < 90; i++) updateWing(1 / 60); } dirty = true; });
+wingBtn.addEventListener("click", () => { const u = wing.userData; u.mode = (u.mode + 1) % 3; wingBtn.lastElementChild.textContent = "Wing: " + WING_MODES[u.mode]; wingBtn.setAttribute("aria-pressed", String(u.mode > 0)); if (!playing) { for (let i = 0; i < 90; i++) updateWing(1 / 60); } dirty = true; });
 
 /* ---------- start on the most dramatic frame: upside down over the lineup ---------- */
 resize();
 for (let i = 0; i < 900 && !(st.phase === "Roll" && st.roll > Math.PI * 0.95); i++) simulate(1 / 60);
 snapCam = true; updateCamera(0);
-if (reduce) pauseBtn.textContent = "Play";
+if (reduce) pauseBtn.lastElementChild.textContent = "Play";
 
 let last = performance.now();
 function loop(now) {
@@ -1698,33 +1660,6 @@ composer.render();
 msg.hidden = true;
 window.__sceneReady = true;
 requestAnimationFrame(loop);
-</script>
-
-<script>
-(() => {
-  // drag strip: constant acceleration, so distance grows with time squared
-  const lanes = [...document.querySelectorAll(".lane")];
-  const raceBtn = document.getElementById("raceBtn");
-  let racing = false;
-  raceBtn.addEventListener("click", () => {
-    if (racing) return; racing = true; raceBtn.disabled = true;
-    const start = performance.now() + 500;
-    lanes.forEach(l => { l.querySelector(".car").style.left = "28px"; l.querySelector(".fill").style.width = "0%"; l.querySelector(".time").textContent = "0.00 s"; });
-    function tick(now) {
-      let done = true;
-      for (const l of lanes) {
-        const T = parseFloat(l.dataset.time), el = Math.max(0, (now - start) / 1000), p = Math.min(1, el / T);
-        if (p < 1) done = false;
-        const pos = p * p;
-        l.querySelector(".car").style.left = `calc(28px + (100% - 28px) * ${pos})`;
-        l.querySelector(".fill").style.width = (pos * 100) + "%";
-        l.querySelector(".time").textContent = (p < 1 ? el : T).toFixed(2) + " s";
-      }
-      if (!done) requestAnimationFrame(tick); else { racing = false; raceBtn.disabled = false; raceBtn.textContent = "Run again"; }
-    }
-    requestAnimationFrame(tick);
-  });
-})();
 </script>
 
 </body>

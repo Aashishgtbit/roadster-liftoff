@@ -22,7 +22,8 @@ down on its jets, settles at the foot of the ramp and drives away.
 
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
-**Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one):
+**Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one), boxed in by
+concrete barriers you can scrape along, with grandstands beyond:
 
 - **Crate stacks**: bust through at 45 km/h or more, or fly over.
 - **Striped walls**: fly over them on the jets, or hit a **yellow kicker ramp** fast and launch over with no fuel.
@@ -34,6 +35,13 @@ down on its jets, settles at the foot of the ramp and drives away.
 Score is distance plus 100 per crate stack, 25 per canister, minus 200 per crash, plus a time bonus at the finish.
 
 ![Drive it](docs/drive-it.png)
+
+## Pages
+
+- `index.html` is the app: one full-window 3D view with a top bar for the three stunt tabs, the story link, sound
+  and **full screen** (or press `F`; where a browser refuses full screen, the top bar folds away instead).
+- `about.html` is the story: the unveiling, the demo beats, the trims, a 0–60 drag strip, the timeline, what is
+  still unproven, how the simulation works, and sources.
 
 ## Run it
 
