@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Unofficial fan page on the Oct 15, 2026 Tesla Roadster unveiling: two physics-simulated 3D stunts with live synthesised sound.">
+<meta name="description" content="Unofficial fan page on the Oct 15, 2026 Tesla Roadster unveiling: two physics-simulated 3D stunts, a drivable game mode and live synthesised sound.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Roadster Liftoff</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,6 +60,31 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gas); outline-o
 .tab:hover { border-color: var(--muted); }
 .tab[aria-selected="true"] { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
 .tab:focus-visible { outline: 2px solid var(--gas); outline-offset: 3px; }
+.game { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.g-panel { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); display: grid; gap: 6px; padding: 10px 14px; background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 12px; min-width: min(320px, 70vw); }
+.g-fuel { display: grid; grid-template-columns: auto 1fr 3ch; gap: 10px; align-items: center; }
+.g-bar { height: 8px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.g-bar i { display: block; height: 100%; width: 60%; background: var(--gas); transition: width .15s linear; }
+.g-bar i.low { background: var(--red); }
+.g-fuel b, .g-stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+.g-stats { display: flex; justify-content: space-between; gap: 16px; }
+.g-toast { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3.4vw, 34px); text-transform: uppercase; color: var(--fg); text-shadow: 0 2px 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .25s; white-space: nowrap; }
+.g-toast.show { opacity: 1; }
+.g-help { position: absolute; left: var(--gutter); bottom: 12px; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--muted); background: rgba(9,13,24,.6); padding: 6px 10px; border-radius: 6px; max-width: 60ch; }
+kbd { font-family: var(--mono); font-size: 10px; color: var(--fg); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+.g-touch { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 14px; display: none; justify-content: space-between; gap: 10px; pointer-events: auto; }
+.g-touch div { display: flex; gap: 8px; }
+.g-touch button { font-family: var(--mono); font-size: 13px; text-transform: uppercase; color: var(--fg); background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 10px; min-width: 56px; height: 56px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.g-touch button.gas { border-color: var(--red); } .g-touch button.jet { border-color: var(--gas); }
+.g-touch button.down { background: var(--rule); }
+@media (pointer: coarse) { .g-touch { display: flex; } .g-help { display: none; } }
+.g-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(9,13,24,.55); pointer-events: auto; }
+.g-card { display: grid; gap: 10px; justify-items: center; text-align: center; padding: 22px 26px; background: var(--night-2); border: 1px solid var(--rule); border-radius: 12px; }
+.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 42px; text-transform: uppercase; }
+.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 14px; }
+.g-row b { color: var(--fg); }
+.stage.driving .stage-note { display: none; }
+@media (max-width: 560px) { .stage.driving .hud { display: none; } .stage.driving .stage-ctl { top: 14px; bottom: auto; } .stage.driving .g-panel { top: 104px; } .stage.driving .g-toast { top: 190px; } }
 @media (max-width: 560px) { .stage-ctl { top: auto; bottom: 34px; left: var(--gutter); right: var(--gutter); flex-wrap: wrap; } .stage-note { left: var(--gutter); } }
 .hud { position: absolute; top: 14px; left: var(--gutter); display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 10px 12px; background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; backdrop-filter: blur(4px); font-variant-numeric: tabular-nums; }
 .hud dt { color: var(--muted); text-transform: uppercase; }
@@ -189,10 +214,31 @@ footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
 <div class="wrap stunts" role="tablist" aria-label="Choose a stunt">
   <span class="label">Choose a stunt</span>
   <button class="tab" type="button" role="tab" data-stunt="jump" aria-selected="true">Lineup jump<small>roll over five cars</small></button>
+  <button class="tab" type="button" role="tab" data-stunt="drive" aria-selected="false">Drive it<small>your turn: bust, fly, refuel</small></button>
   <button class="tab" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang<small>up the wall, x-axis flip, drive away</small></button>
 </div>
 <div class="stage" id="stage">
-  <canvas id="scene" aria-label="3D animation: a white roadster fires cold-gas thrusters, rolls upside down over a row of parked cars, a Semi and a Cybertruck at night, and lands." role="img"></canvas>
+  <div class="game" id="gameUI" hidden>
+    <div class="g-panel">
+      <div class="g-fuel"><span class="label">Fuel</span><div class="g-bar"><i id="fuelBar"></i></div><b id="fuelNum">60</b></div>
+      <div class="g-stats"><span><span class="label">Score</span> <b id="gameScore">0</b></span><span><span class="label">To finish</span> <b id="gameLeft">330 m</b></span></div>
+    </div>
+    <div class="g-toast" id="gameToast">Gas to start</div>
+    <p class="g-help"><kbd>W</kbd>/<kbd>↑</kbd> gas · <kbd>S</kbd>/<kbd>↓</kbd> brake · <kbd>A</kbd><kbd>D</kbd> steer · <kbd>Space</kbd> jets (fly) · <kbd>Shift</kbd> boost · <kbd>R</kbd> reset<br>Bust crates at 45+ km/h, fly over walls, grab fuel cans.</p>
+    <div class="g-touch" aria-hidden="true">
+      <div><button type="button" data-key="left">◀</button><button type="button" data-key="right">▶</button></div>
+      <div><button type="button" data-key="brake">Brake</button><button type="button" data-key="boost">Boost</button><button type="button" data-key="jet" class="jet">Jets</button><button type="button" data-key="gas" class="gas">Gas</button></div>
+    </div>
+    <div class="g-over" id="gameOver" hidden>
+      <div class="g-card">
+        <span class="label">Finish</span>
+        <p class="g-big"><b id="goScore">0</b> points</p>
+        <p class="g-row"><span>Time <b id="goTime">0 s</b></span><span>Crates busted <b id="goBusts">0</b></span><span>Fuel cans <b id="goCans">0</b></span></p>
+        <button class="btn primary" id="againBtn" type="button">Drive again</button>
+      </div>
+    </div>
+  </div>
+  <canvas id="scene" tabindex="0" aria-label="3D animation: a white roadster fires cold-gas thrusters, rolls upside down over a row of parked cars, a Semi and a Cybertruck at night, and lands." role="img"></canvas>
   <div class="stage-msg" id="stageMsg">Building the 3D scene…</div>
   <dl class="hud" aria-live="off">
     <dt>Phase</dt><dd id="hudPhase">Roll</dd>
@@ -383,6 +429,7 @@ const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("scene");
 const msg = document.getElementById("stageMsg");
+document.getElementById("againBtn").addEventListener("click", () => { restart("drive"); gameReset(); canvas.focus({ preventScroll: true }); });
 const hudPhase = document.getElementById("hudPhase"), hudRot = document.getElementById("hudRot"), hudJets = document.getElementById("hudJets"), hudAlt = document.getElementById("hudAlt"), hudSpd = document.getElementById("hudSpd");
 const soundBtn = document.getElementById("soundBtn"), stuntBtns = [...document.querySelectorAll("[data-stunt]")], hudFan = document.getElementById("hudFan");
 const pauseBtn = document.getElementById("pauseBtn"), replayBtn = document.getElementById("replayBtn"), camBtn = document.getElementById("camBtn"), wingBtn = document.getElementById("wingBtn");
@@ -706,6 +753,8 @@ car.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true;
 // integrated; a scripted flight computer (the car was remote-operated on the night) decides how hard each nozzle fires.
 // Two stunts from the night: "jump" (roll over the lineup) and "ramp" (climb a curved wall on suction, pause upside down,
 // tip off the end of the runway, roll 180° about its length to land on the wheels, then drive away).
+// A third mode, "drive", hands the controls to the player: throttle, steering, jets and boost, with fuel, and solid
+// obstacle boxes the car can hit, bust through (crates, at speed), or land on.
 function makeRoadsterSim(THREE, C) {
   const V = THREE.Vector3, Q = THREE.Quaternion;
   const M = 1900, g = 9.81, I = new V(820, 3900, 3500);          // kg; roll, yaw, pitch inertia (kg m²)
@@ -720,12 +769,15 @@ function makeRoadsterSim(THREE, C) {
   const HULL = [];
   // floor and roof line of the body at tail, middle and nose (relative to the centre of mass)
   for (const [x, lo, hi] of [[-2.2, -0.37, 0.38], [0, -0.44, 0.58], [2.2, -0.27, -0.06]]) for (const z of [-0.85, 0.85]) HULL.push(new V(x, lo, z), new V(x, hi, z));
-  const st = { pos: new V(), vel: new V(), q: new Q(), w: new V(), phase: "Approach", pt: 0, roll: 0, pitch: 0, t: 0, wing: 1, scn: "jump", fan: 0, fanCmd: 0, flip0: 0, contacts: 0 };
+  const st = { pos: new V(), vel: new V(), q: new Q(), w: new V(), phase: "Approach", pt: 0, roll: 0, pitch: 0, t: 0, wing: 1, scn: "jump", fan: 0, fanCmd: 0, flip0: 0, contacts: 0,
+    input: { throttle: 0, steer: 0, jet: false, boost: false }, fuel: 100, steerAng: 0, boxes: [] };
+  const BUST_SPEED = C.BUST_SPEED ?? 12.5;   // m/s (45 km/h): crates give way above this
   const _a = new V(), _b = new V(), _c = new V(), _d = new V(), _f = new V(), _l = new V(), _r = new V(), _F = new V(), _T = new V(), _qi = new Q(), _wb = new V(), _Iw = new V(), _n = new V(), _yb = new V();
   function reset(scn = st.scn) {
     st.scn = scn;
-    st.pos.set(scn === "ramp" ? RAMP.cx - 18 : C.X_TAKE - 16, C.COM, 0); st.vel.set(0, 0, 0); st.q.identity(); st.w.set(0, 0, 0);
-    st.phase = "Approach"; st.pt = 0; st.roll = 0; st.pitch = 0; st.t = 0; st.fan = 0; st.fanCmd = 0;
+    st.pos.set(scn === "ramp" ? RAMP.cx - 18 : scn === "drive" ? -6 : C.X_TAKE - 16, C.COM, 0); st.vel.set(0, 0, 0); st.q.identity(); st.w.set(0, 0, 0);
+    st.fuel = C.FUEL0 ?? 60; st.steerAng = 0;
+    st.phase = scn === "drive" ? "Ready" : "Approach"; st.pt = 0; st.roll = 0; st.pitch = 0; st.t = 0; st.fan = 0; st.fanCmd = 0;
     for (const w of wheels) { w.len = w.prevLen = LS0; w.spin = 0; w.contact = false; }
     for (const n of noz) n.T = n.cmd = 0;
   }
@@ -740,6 +792,11 @@ function makeRoadsterSim(THREE, C) {
   function contact(P, d) {
     let best = null;
     if (-d.y > 0.3) best = { len: (P.y - C.WR) / -d.y, nx: 0, ny: 1 };
+    if (-d.y > 0.3) for (const b of st.boxes) {
+      if (b.gone || P.x < b.x0 || P.x > b.x1 || P.z < b.z0 || P.z > b.z1 || P.y < b.y1 - 0.05) continue;
+      const len = (P.y - b.y1 - C.WR) / -d.y;
+      if (!best || len < best.len) best = { len, nx: 0, ny: 1 };
+    }
     if (st.scn === "ramp" && Math.abs(P.z) < RAMP.hw) {
       const r = RAMP.R - C.WR, qx = P.x - RAMP.cx, qy = P.y - RAMP.R, a = d.x * d.x + d.y * d.y;
       const b = 2 * (qx * d.x + qy * d.y), c = qx * qx + qy * qy - r * r, disc = b * b - 4 * a * c;
@@ -802,7 +859,28 @@ function makeRoadsterSim(THREE, C) {
     for (const n of noz) n.cmd = 0;
     const pitchT = I.z * (30 * -A.pitch + 10 * -A.wz);
     const brakeJets = () => { for (const n of fwd > 0 ? front : rear) n.cmd = 0.7; };
-    if (st.scn === "jump") switch (st.phase) {
+    if (st.scn === "drive") {
+      const inp = st.input, spd = Math.abs(fwd), flying = st.contacts === 0, gas = st.fuel > 0;
+      // steering eases toward the input; less lock at speed
+      st.steerAng += (-inp.steer * 0.42 / (1 + spd / 14) - st.steerAng) * Math.min(1, DT * 8);
+      if (inp.throttle > 0) drive = fwd < 42 ? M * 4.2 * inp.throttle : 0;
+      else if (inp.throttle < 0) drive = fwd > 0.5 ? -M * 7 : (fwd > -8 ? -M * 2.5 : 0);
+      else drive = -M * 0.3 * Math.sign(fwd) * Math.min(1, spd);
+      if (inp.jet && gas) {
+        // floor jets lift the car and hold it level; steering turns it in the air with the nose jets
+        _qt.setFromAxisAngle(_ax.set(0, 1, 0), A.yaw - (flying ? inp.steer * 0.7 : 0));
+        const att = attitude(_qt, 3, 8), upY = Math.max(0.3, _a.set(0, 1, 0).applyQuaternion(st.q).y);
+        // climb fast to a hover about 4.5 m up (enough to clear a wall) and hold there while Space is held
+        const hAG = st.pos.y - C.COM, vyWant = Math.max(-3, Math.min(7, 1.6 * (C.HOVER_H ?? 4.5) - 1.6 * hAG));
+        allocDown(Math.max(0, Math.min(2.3 * M * g, M * (g + 5 * (vyWant - st.vel.y)))) / upY, att.tx, att.tz);
+        for (const n of front) n.cmd = Math.max(n.cmd, Math.max(0, Math.min(1, att.ty / (-n.p.z) / n.Tmax)));
+        st.fuel -= 15 * DT;
+      }
+      if (inp.boost && gas) { for (const n of rear) n.cmd = 1; st.fuel -= 12 * DT; }
+      if (!flying && !inp.jet && !inp.boost) st.fuel += 4 * DT;   // an on-board compressor slowly refills the tanks
+      st.fuel = Math.max(0, Math.min(100, st.fuel));
+      st.phase = flying ? (inp.jet && gas ? "Flying" : "Airborne") : inp.boost && gas ? "Boost" : spd > 0.3 || inp.throttle ? "Driving" : st.phase === "Ready" ? "Ready" : "Stopped";
+    } else if (st.scn === "jump") switch (st.phase) {
       case "Approach": drive = M * 2.2 * (VT - fwd); if (st.pos.x > SPOOL_AT) setPhase("Spool"); break;
       case "Spool": drive = M * 2.2 * (VT - fwd); allocDown(M * g * 0.3, 0, pitchT); if (st.pos.x >= C.X_TAKE) setPhase("Lift"); break;
       case "Lift":
@@ -871,12 +949,12 @@ function makeRoadsterSim(THREE, C) {
       case "Drive off": drive = M * 2.2 * (6 - fwd); if (st.pt > 2.2) setPhase("Brake"); break;
       case "Descend": descend(A, pitchT, 0); break;
     }
-    switch (st.phase) {   // shared by both stunts once the car is back on the ground
+    if (st.scn !== "drive") switch (st.phase) {   // shared by both stunts once the car is back on the ground
       case "Touchdown": allocDown(st.pt < 0.1 ? M * g * 0.6 : 0, 0, pitchT); drive = -M * 2.5 * fwd; if (st.pt > 0.25) setPhase(st.scn === "ramp" ? "Drive off" : "Brake"); break;
       case "Brake": drive = -M * 2.5 * fwd; if (st.pt < 0.7) brakeJets(); if (Math.abs(fwd) < 0.12 && st.pt > 0.8) setPhase("Parked"); break;
       case "Parked": drive = -M * 3 * fwd; break;
     }
-    const lim = st.scn === "ramp" ? 34000 : 14000;
+    const lim = st.scn === "ramp" ? 34000 : st.scn === "drive" ? 16000 : 14000;
     return Math.max(-lim, Math.min(lim, drive)) / 4;
   }
   function substep() {
@@ -898,6 +976,7 @@ function makeRoadsterSim(THREE, C) {
         _n.set(hit.nx, hit.ny, 0);
         const cp = _r.copy(P).addScaledVector(down_, w.len).addScaledVector(_n, -C.WR).clone();
         _f.set(1, 0, 0).applyQuaternion(st.q); _f.addScaledVector(_n, -_f.dot(_n)).normalize();
+        if (st.steerAng && w.hp.x > 0) _f.applyAxisAngle(_n, st.steerAng);
         _l.crossVectors(_n, _f);
         const rel = _c.subVectors(cp, st.pos), vcp = _Iw.crossVectors(st.w, rel).add(st.vel);
         const vf = vcp.dot(_f), vl = vcp.dot(_l), fmax = MU * F;
@@ -909,19 +988,33 @@ function makeRoadsterSim(THREE, C) {
     st.contacts = contacts;
     for (const h of HULL) {
       const P = _a.copy(h).applyQuaternion(st.q).add(st.pos);
-      let pen = -P.y, nx = 0, ny = 1;
+      let pen = -P.y, nx = 0, ny = 1, nz = 0;
       if (st.scn === "ramp" && Math.abs(P.z) < RAMP.hw) {
         const dx = P.x - RAMP.cx, dy = P.y - RAMP.R, th = Math.atan2(dx, -dy), ln = Math.hypot(dx, dy);
         if (th > 0.02 && th < RAMP.thMax && ln - RAMP.R > pen) { pen = ln - RAMP.R; nx = -dx / ln; ny = -dy / ln; }
       }
+      for (const b of st.boxes) {
+        if (b.gone || P.x < b.x0 || P.x > b.x1 || P.y < b.y0 || P.y > b.y1 || P.z < b.z0 || P.z > b.z1) continue;
+        // push out through the shallowest side; the top only counts if the point came down onto it (no launching
+        // a car that is scraping up a wall face)
+        const faces = [[P.x - b.x0, -1, 0, 0], [b.x1 - P.x, 1, 0, 0], [P.z - b.z0, 0, 0, -1], [b.z1 - P.z, 0, 0, 1]];
+        if (P.y - st.vel.y * 0.06 > b.y1 - 0.12) faces.push([b.y1 - P.y, 0, 1, 0]);
+        let f = faces[0]; for (const q of faces) if (q[0] < f[0]) f = q;
+        const closing = -(st.vel.x * f[1] + st.vel.y * f[2] + st.vel.z * f[3]);
+        if (b.bust && closing > BUST_SPEED) { b.gone = true; st.vel.multiplyScalar(0.88); C.onBust?.(b, closing); continue; }
+        if (closing > 4 && !b.hitT) C.onHit?.(b, closing);
+        b.hitT = 0.4;
+        if (f[0] > pen) { pen = f[0]; nx = f[1]; ny = f[2]; nz = f[3]; }
+      }
       if (pen <= 0) continue;
-      _n.set(nx, ny, 0);
+      _n.set(nx, ny, nz);
       const rel = _c.subVectors(P, st.pos), v = _Iw.crossVectors(st.w, rel).add(st.vel), vn = v.dot(_n);
-      const Fn = Math.max(0, 400000 * pen - 30000 * vn);
+      const Fn = Math.min(3 * M * g, Math.max(0, 400000 * pen - 30000 * vn));   // capped, so a deep overlap cannot fire the car off
       const vt = _r.copy(v).addScaledVector(_n, -vn), vtl = vt.length();
       const Ff = vtl > 1e-3 ? Math.min(0.3 * Fn, 20000 * vtl) / vtl : 0;
       addForceAt(_c.copy(_n).multiplyScalar(Fn).addScaledVector(vt, -Ff), P.clone());
     }
+    for (const b of st.boxes) if (b.hitT) b.hitT = Math.max(0, b.hitT - DT);
     // suction fans: pull the floor toward whatever surface the wheels are on (they only seal with the wheels down)
     st.fan += (st.fanCmd - st.fan) * (1 - Math.exp(-DT / (st.fanCmd > st.fan ? 0.35 : 0.12)));
     if (st.fan > 0.01) _F.addScaledVector(down_, FAN_MAX * st.fan * (contacts >= 3 ? 1 : contacts * 0.15));
@@ -1067,6 +1160,173 @@ const rampGroup = new THREE.Group(); rampGroup.visible = false; scene.add(rampGr
   rampGroup.add(spot, spot.target);
 }
 
+/* ---------- "Drive it": the player takes the wheel. Bust crates or fly over them, fly over walls, collect fuel ---------- */
+const FINISH_X = 330;
+const gameUI = document.getElementById("gameUI"), gameToast = document.getElementById("gameToast"), gameOver = document.getElementById("gameOver");
+const fuelBar = document.getElementById("fuelBar"), fuelNum = document.getElementById("fuelNum"), gameScore = document.getElementById("gameScore"), gameLeft = document.getElementById("gameLeft");
+const goScore = document.getElementById("goScore"), goTime = document.getElementById("goTime"), goBusts = document.getElementById("goBusts"), goCans = document.getElementById("goCans");
+const course = new THREE.Group(); course.visible = false; scene.add(course);
+const game = { boxes: [], cans: [], debris: [], started: false, finished: false, t: 0, busts: 0, cansGot: 0, best: 0, toastT: 0 };
+{
+  const canvasTex = (w, h, draw) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+  const crateTex = canvasTex(128, 128, (x, w, h) => {
+    x.fillStyle = "#b9803f"; x.fillRect(0, 0, w, h);
+    x.strokeStyle = "#6e4519"; x.lineWidth = 10; x.strokeRect(5, 5, w - 10, h - 10);
+    x.lineWidth = 8; x.beginPath(); x.moveTo(8, 8); x.lineTo(w - 8, h - 8); x.stroke();
+    x.fillStyle = "rgba(0,0,0,0.12)"; for (let y = 24; y < h; y += 24) x.fillRect(10, y, w - 20, 2);
+  });
+  const wallTex = canvasTex(256, 64, (x, w, h) => {
+    x.fillStyle = "#e9ebee"; x.fillRect(0, 0, w, h);
+    x.fillStyle = "#d42a1f"; for (let i = -2; i < 10; i++) { x.beginPath(); x.moveTo(i * 32, h); x.lineTo(i * 32 + 16, h); x.lineTo(i * 32 + 32 + 16, 0); x.lineTo(i * 32 + 32, 0); x.fill(); }
+  });
+  wallTex.wrapS = THREE.RepeatWrapping; wallTex.repeat.set(4, 1);
+  const crateMat = new THREE.MeshStandardMaterial({ map: crateTex, roughness: 0.85 });
+  const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.7 });
+  const crateGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+  game.crateGeo = crateGeo; game.crateMat = crateMat;
+  const canMat = new THREE.MeshStandardMaterial({ color: 0x0b2a33, emissive: 0x57d9ff, emissiveIntensity: 2.4, metalness: 0.4, roughness: 0.3 });
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xdde4ee, metalness: 1, roughness: 0.2 });
+  const R = (() => { let s = 1234567; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
+  const addCan = (x, y, z) => {
+    const g = new THREE.Group(); g.position.set(x, y, z);
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.72, 20), canMat));
+    for (const yy of [-0.3, 0.3]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.04, 8, 24), ringMat); r.rotation.x = Math.PI / 2; r.position.y = yy; g.add(r); }
+    course.add(g); game.cans.push({ g, x, y, z, got: false });
+  };
+  // obstacles every ~32 m: crate stacks (bust them at speed or fly over) and striped walls (fly over)
+  let x = 34, i = 0;
+  while (x < FINISH_X - 25) {
+    const type = ["crates", "wall", "crates", "crates", "wall"][i % 5];
+    if (type === "crates") {
+      const g = new THREE.Group(); g.position.set(x, 0, 0);
+      for (let row = 0; row < 2; row++) for (let k = 0; k < 7; k++) { const m = new THREE.Mesh(crateGeo, crateMat); m.position.set(0.6, 0.6 + row * 1.2, -3.6 + k * 1.2); m.rotation.y = (R() - 0.5) * 0.08; g.add(m); }
+      g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      course.add(g);
+      game.boxes.push({ id: "crates" + i, kind: "crates", g, x0: x, x1: x + 1.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true });
+      addCan(x + 5, 0.95, (R() - 0.5) * 3);                       // a reward right behind the crates for busting through
+    } else {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2.4, 16), wallMat); m.position.set(x + 0.5, 1.2, 0); m.castShadow = m.receiveShadow = true;
+      course.add(m);
+      game.boxes.push({ id: "wall" + i, kind: "wall", g: m, x0: x, x1: x + 1, y0: 0, y1: 2.4, z0: -8, z1: 8 });
+      addCan(x + 0.5, 4.3, (R() - 0.5) * 2);                      // only reachable by flying over
+    }
+    addCan(x + 16, 0.95, (R() - 0.5) * 4);
+    x += 28 + R() * 9; i++;
+  }
+  // finish arch with a chequered banner
+  const chk = canvasTex(256, 32, (c, w, h) => { for (let a = 0; a < w / 16; a++) for (let b = 0; b < 2; b++) { c.fillStyle = (a + b) % 2 ? "#111" : "#f2f2f2"; c.fillRect(a * 16, b * 16, 16, 16); } });
+  const post = new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.4 });
+  for (const z of [-8.5, 8.5]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.35, 5.6, 0.35), post); p.position.set(FINISH_X, 2.8, z); course.add(p); }
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(17, 1.4), new THREE.MeshStandardMaterial({ map: chk, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: chk, emissiveIntensity: 0.6 }));
+  banner.position.set(FINISH_X, 5, 0); banner.rotation.y = Math.PI / 2; course.add(banner);
+  const line = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 16).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: chk, roughness: 0.8 }));
+  line.position.set(FINISH_X, 0.01, 0); course.add(line);
+  // lane markings, cones and lamp posts the length of the course
+  const paint = new THREE.MeshStandardMaterial({ color: 0xd9dde4, roughness: 0.7 }), m4 = new THREE.Matrix4();
+  const dashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(1.8, 0.14).rotateX(-Math.PI / 2), paint, 220); let k = 0;
+  for (let xx = 0; xx < FINISH_X + 20 && k < 220; xx += 3.4) for (const z of [-3.6, 3.6]) { if (k < 220) { m4.makeTranslation(xx, 0.006, z); dashes.setMatrixAt(k++, m4); } }
+  dashes.count = k; course.add(dashes);
+  const cones = new THREE.InstancedMesh(new THREE.ConeGeometry(0.16, 0.5, 14).translate(0, 0.25, 0), new THREE.MeshStandardMaterial({ color: 0xff5a14, roughness: 0.55 }), 80); k = 0;
+  for (let xx = 0; xx < FINISH_X + 10 && k < 80; xx += 9) for (const z of [-9.2, 9.2]) { if (k < 80) { m4.makeTranslation(xx, 0, z); cones.setMatrixAt(k++, m4); } }
+  cones.count = k; course.add(cones);
+  const lamp = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0xeef4ff, emissiveIntensity: 5 });
+  for (let xx = 40; xx < FINISH_X; xx += 55) for (const z of [-13, 13]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 9, 8), post); p.position.set(xx, 4.5, z); course.add(p);
+    const hd = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.25, 0.5), lamp); hd.position.set(xx, 9.1, z * 0.94); course.add(hd);
+  }
+}
+// lights for the course: a key light that follows the car, and the car's own headlights
+const followLight = new THREE.DirectionalLight(0xdfe8ff, 1.3); followLight.visible = false;
+followLight.castShadow = true; followLight.shadow.mapSize.set(2048, 2048);
+Object.assign(followLight.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 60 }); followLight.shadow.bias = -0.0004;
+scene.add(followLight, followLight.target);
+const headlight = new THREE.SpotLight(0xf4f8ff, 420, 0, 0.5, 0.55, 2); headlight.visible = false;
+headlight.position.set(2.2, 0.5, 0); headlight.target.position.set(14, -0.4, 0); body.add(headlight, headlight.target);
+
+function gameReset() {
+  for (const b of game.boxes) { b.gone = false; b.hitT = 0; b.g.visible = true; }
+  for (const c of game.cans) { c.got = false; c.g.visible = true; }
+  for (const d of game.debris) course.remove(d.m); game.debris = [];
+  Object.assign(game, { started: false, finished: false, t: 0, busts: 0, cansGot: 0, best: 0 });
+  st.boxes = game.boxes; gameOver.hidden = true; toast("Gas to start");
+}
+function toast(text) { gameToast.textContent = text; gameToast.classList.add("show"); game.toastT = 1.6; }
+function chime(f0) {
+  if (!snd.on || !snd.ctx) return;
+  const t = snd.ctx.currentTime, o = snd.ctx.createOscillator(), g = snd.ctx.createGain();
+  o.type = "triangle"; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 2, t + 0.12);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+  o.connect(g); g.connect(snd.master); o.start(t); o.stop(t + 0.4);
+}
+function gameBust(b, v) {
+  if (st.scn !== "drive") return;
+  b.g.visible = false; game.busts++; toast(`Busted at ${Math.round(v * 3.6)} km/h · +100`);
+  if (snd.on) { snd.thump(0.9); snd.burst(0.5, "bandpass", 900, 0.6); }
+  for (const c of b.g.children) {   // the stack bursts into its crates
+    const m = new THREE.Mesh(game.crateGeo, game.crateMat); c.getWorldPosition(m.position); m.castShadow = true; course.add(m);
+    game.debris.push({ m, v: new THREE.Vector3(v * (0.5 + Math.random() * 0.6), 2 + Math.random() * 5, (m.position.z - st.pos.z) * 0.9 + (Math.random() - 0.5) * 4),
+      w: new THREE.Vector3(Math.random() * 8 - 4, Math.random() * 8 - 4, Math.random() * 8 - 4), life: 5 });
+  }
+}
+function gameHit(b, v) {
+  if (st.scn !== "drive") return;
+  toast(b.kind === "wall" ? "Walls don't bust · fly over with Space" : `Too slow to bust (${Math.round(v * 3.6)} km/h) · go 45+`);
+  if (snd.on) snd.thump(Math.min(1, v / 10));
+}
+const keys = {};
+const KEYMAP = { KeyW: "gas", ArrowUp: "gas", KeyS: "brake", ArrowDown: "brake", KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", Space: "jet", ShiftLeft: "boost", ShiftRight: "boost" };
+window.addEventListener("keydown", e => {
+  if (st.scn !== "drive" || !visible) return;
+  if (e.code === "KeyR") { resetUpright(); return; }
+  const k = KEYMAP[e.code]; if (!k) return;
+  keys[k] = true; e.preventDefault();
+});
+window.addEventListener("keyup", e => { const k = KEYMAP[e.code]; if (k) keys[k] = false; });
+window.addEventListener("blur", () => { for (const k in keys) keys[k] = false; });
+for (const b of document.querySelectorAll("[data-key]")) {
+  const k = b.dataset.key, on = e => { e.preventDefault(); if (k === "reset") resetUpright(); else keys[k] = true; b.classList.add("down"); }, off = () => { keys[k] = false; b.classList.remove("down"); };
+  b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointerleave", off); b.addEventListener("pointercancel", off);
+}
+function resetUpright() {   // R: put the car back on its wheels where it is, keeping its heading
+  const f = new THREE.Vector3(1, 0, 0).applyQuaternion(st.q), yaw = Math.atan2(-f.z, f.x);
+  st.q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw); st.w.set(0, 0, 0); st.vel.multiplyScalar(0.2);
+  st.pos.y = Math.max(st.pos.y, COM + 0.3); st.roll = st.pitch = 0; toast("Reset");
+}
+function gameInput() {
+  const inp = st.input, go = !game.finished;
+  inp.throttle = go ? (keys.gas ? 1 : 0) - (keys.brake ? 1 : 0) : -1;
+  inp.steer = go ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
+  inp.jet = go && !!keys.jet; inp.boost = go && !!keys.boost;
+  if (!game.started && go && (inp.throttle > 0 || inp.jet || inp.boost)) { game.started = true; toast("Go! Bust crates, fly over walls"); }
+}
+function gameUpdate(dt) {
+  if (game.started && !game.finished) game.t += dt;
+  game.best = Math.max(game.best, st.pos.x);
+  for (const c of game.cans) {   // fuel canisters spin, bob and get picked up
+    if (c.got) continue;
+    c.g.rotation.y += dt * 2; c.g.position.y = c.y + Math.sin(st.t * 3 + c.x) * 0.12;
+    if (c.g.position.distanceToSquared(st.pos) < 2.4 * 2.4) { c.got = true; c.g.visible = false; game.cansGot++; st.fuel = Math.min(100, st.fuel + 25); toast("Fuel +25"); chime(660); }
+  }
+  for (let i = game.debris.length - 1; i >= 0; i--) {
+    const d = game.debris[i]; d.v.y -= 9.81 * dt; d.m.position.addScaledVector(d.v, dt);
+    d.m.rotation.x += d.w.x * dt; d.m.rotation.y += d.w.y * dt; d.m.rotation.z += d.w.z * dt;
+    if (d.m.position.y < 0.6) { d.m.position.y = 0.6; d.v.y *= -0.3; d.v.x *= 0.7; d.v.z *= 0.7; d.w.multiplyScalar(0.7); }
+    if ((d.life -= dt) < 0) { course.remove(d.m); game.debris.splice(i, 1); }
+  }
+  if (!game.finished && st.pos.x >= FINISH_X) {
+    game.finished = true;
+    const score = Math.round(FINISH_X + game.busts * 100 + game.cansGot * 25 + Math.max(0, 60 - game.t) * 10);
+    goScore.textContent = score; goTime.textContent = game.t.toFixed(1) + " s"; goBusts.textContent = game.busts; goCans.textContent = game.cansGot;
+    gameOver.hidden = false; toast("Finish!"); chime(520); setTimeout(() => chime(780), 140);
+  }
+  if ((game.toastT -= dt) < 0) gameToast.classList.remove("show");
+  fuelBar.style.width = st.fuel.toFixed(1) + "%"; fuelBar.classList.toggle("low", st.fuel < 20);
+  fuelNum.textContent = Math.round(st.fuel);
+  gameScore.textContent = Math.round(Math.max(0, game.best) + game.busts * 100 + game.cansGot * 25);
+  gameLeft.textContent = Math.max(0, Math.round(FINISH_X - st.pos.x)) + " m";
+  followLight.position.set(st.pos.x - 8, 20, st.pos.z + 10); followLight.target.position.copy(st.pos);
+}
+
 /* ---------- cold-gas plumes ---------- */
 const MAXP = 2200;
 const pPos = new Float32Array(MAXP * 3), pSize = new Float32Array(MAXP), pAlpha = new Float32Array(MAXP);
@@ -1112,7 +1372,7 @@ function updateParts(dt) {
 }
 
 /* ---------- the run: physics drives the car, the gas and the HUD ---------- */
-const sim = makeRoadsterSim(THREE, { WR, COM, XW, TRACK_Z, X_TAKE: -10, nozzles: NOZ, ramp: RAMP });
+const sim = makeRoadsterSim(THREE, { WR, COM, XW, TRACK_Z, X_TAKE: -10, nozzles: NOZ, ramp: RAMP, onBust: gameBust, onHit: gameHit });
 const st = sim.st;
 const WING_MODES = ["Road", "High-Downforce", "Low-Drag"];
 function updateWing(dt) {
@@ -1138,15 +1398,19 @@ function emitFrom(n, f, dt) {
 }
 let playing = !reduce, free = false, visible = true, dirty = true;
 function restart(scn) { sim.reset(scn); parts = []; snapCam = true; }
-const STUNTS = { jump: "Lineup jump", ramp: "Ramp hang" };
+const STUNTS = { jump: "Lineup jump", ramp: "Ramp hang", drive: "Drive it" };
 function setStunt(scn) {
   restart(scn);
   lineup.visible = scn === "jump"; rampGroup.visible = scn === "ramp";
+  const drv = scn === "drive";
+  course.visible = followLight.visible = headlight.visible = drv; gameUI.hidden = !drv; stage.classList.toggle("driving", drv);
+  st.boxes = []; if (drv) { gameReset(); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } canvas.focus({ preventScroll: true }); }
   for (const b of stuntBtns) b.setAttribute("aria-selected", String(b.dataset.stunt === scn));
   if (!playing) { simulate(1 / 60); updateCamera(0); }
   dirty = true;
 }
 function simulate(dt) {
+  if (st.scn === "drive") gameInput();
   sim.step(dt);
   if (st.phase === "Parked" && st.pt > 2.8) restart();
   car.position.copy(st.pos); car.quaternion.copy(st.q); car.updateMatrixWorld(true);
@@ -1161,6 +1425,7 @@ function simulate(dt) {
     kN += n.T / 1000; n.glowMat.emissiveIntensity = 2.5 * f;
   }
   updateParts(dt); updateWing(dt);
+  if (st.scn === "drive") gameUpdate(dt);
   hudPhase.textContent = st.phase;
   hudAlt.textContent = Math.max(0, st.pos.y - COM).toFixed(1) + " m";
   hudSpd.textContent = Math.round(st.vel.length() * 3.6) + " km/h";
@@ -1174,10 +1439,15 @@ function simulate(dt) {
 }
 
 /* ---------- camera: cinematic shots, or free look ---------- */
-const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), wantPos = new THREE.Vector3(), wantLook = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), wantPos = new THREE.Vector3(), wantLook = new THREE.Vector3(), _cf = new THREE.Vector3();
 let snapCam = true;
 function shot() {
   const cx = car.position.x, cy = car.position.y, cz = car.position.z;   // the car can drift sideways; every shot follows it
+  if (st.scn === "drive") {   // chase camera behind the car
+    const f = _cf.set(1, 0, 0).applyQuaternion(car.quaternion); f.y = 0; if (f.lengthSq() < 0.01) f.set(1, 0, 0); f.normalize();
+    wantPos.copy(car.position).addScaledVector(f, -9.5); wantPos.y = Math.max(2.6, car.position.y + 2.9);
+    wantLook.copy(car.position).addScaledVector(f, 7); wantLook.y = car.position.y + 0.4; return;
+  }
   if (st.scn === "ramp") switch (st.phase) {   // the ramp stunt: wide on the climb, low and close on the hang
     case "Climb": case "Exit": wantPos.set(RAMP.cx + 1.5, 7.2, 35); wantLook.set(RAMP.cx + 1.5, 7.2, 0); return;
     case "Hang": wantPos.set(RAMP.cx - 4.5, 1.5, 7.5); wantLook.set(cx, cy - 0.4, 0); return;
@@ -1215,7 +1485,7 @@ function updateCamera(dt) {
   }
   shot();
   if (snapCam) { camPos.copy(wantPos); camLook.copy(wantLook); snapCam = false; }
-  else { const k = 1 - Math.exp(-dt * 2.4); camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); }
+  else { const k = 1 - Math.exp(-dt * (st.scn === "drive" ? 5 : 2.4)); camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); }
   camera.position.copy(camPos); camera.lookAt(camLook);
 }
 
@@ -1321,7 +1591,7 @@ new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stag
 
 /* ---------- controls ---------- */
 pauseBtn.addEventListener("click", () => { playing = !playing; pauseBtn.textContent = playing ? "Pause" : "Play"; });
-replayBtn.addEventListener("click", () => { restart(st.scn); simulate(0); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } });
+replayBtn.addEventListener("click", () => { restart(st.scn); if (st.scn === "drive") { gameReset(); st.boxes = game.boxes; } simulate(0); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } });
 camBtn.addEventListener("click", () => setFree(!free));
 soundBtn.addEventListener("click", () => setSound(!snd.on));
 for (const b of stuntBtns) b.addEventListener("click", () => setStunt(b.dataset.stunt));

@@ -10,7 +10,7 @@ real-time 3D stunts that are **computed by a physics simulation**, with sound ge
 > Masses, thrusts and other physics values are estimates. Tesla, Roadster, Cybertruck, Cybercab and Semi are
 > trademarks of Tesla, Inc.
 
-## The two stunts
+## Two stunts and a game
 
 **Lineup jump.** The car spools its floor jets, lifts off, rolls 360° along its direction of travel over two
 sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s.
@@ -22,6 +22,13 @@ down on its jets, settles at the foot of the ramp and drives away.
 
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
+**Drive it.** Your turn. Drive a 330 m night course: bust through crate stacks at 45 km/h or more, fly over the
+striped walls on the jets, and grab glowing fuel canisters (some only reachable in the air). The jets burn fuel;
+the tanks also refill slowly while you drive. Score is distance plus 100 per crate stack busted, 25 per canister and
+a time bonus.
+
+![Drive it](docs/drive-it.png)
+
 ## Run it
 
 It is a single static page. Open `index.html` in a browser, or serve the folder:
@@ -32,11 +39,22 @@ npm start
 
 Three.js loads from the jsDelivr CDN, so the page needs a network connection the first time.
 
+Driving (Drive it):
+
+| Key | Touch | Does |
+| --- | --- | --- |
+| `W` / `↑` | Gas | Accelerate |
+| `S` / `↓` | Brake | Brake, then reverse |
+| `A` `D` / `←` `→` | ◀ ▶ | Steer (front wheels on the ground, nose jets in the air) |
+| `Space` | Jets | Floor jets: climb to a hover about 4.5 m up and hold it |
+| `Shift` | Boost | Rear jets |
+| `R` | | Put the car back on its wheels |
+
 Controls in the 3D view:
 
 | Control | What it does |
 | --- | --- |
-| **Choose a stunt** | Switch between Lineup jump and Ramp hang |
+| **Choose a stunt** | Switch between Lineup jump, Drive it and Ramp hang |
 | **Sound** | Turn the live sound on or off (browsers only allow audio after a click) |
 | **Wing** | Cycle Tesla's Track Mode aero: Road (stowed), High-Downforce, Low-Drag |
 | **Free look** | Drag to orbit the car; click again to return to the cinematic camera |
@@ -53,6 +71,9 @@ Everything runs at a fixed 240 Hz in the browser:
   each pushing from its real position with about 40 ms of valve lag, so uneven firing turns the car.
 - **Suction fans.** Up to 1.6 times the car's weight, pulling the floor toward the surface the wheels are on.
 - **Aero.** Drag, plus downforce that depends on the wing mode.
+- **Player control (Drive it).** Throttle and brake through the tyres, front-wheel steering with less lock at speed,
+  jets that hold the car level with a quaternion attitude controller and a height hold, and solid obstacle boxes:
+  the hull collides with them, wheels can land on top of them, and crates give way above 12.5 m/s.
 - **Flight computer.** The car was remote-operated on the night; here a controller flies each stunt phase by phase:
   roll profiles, a quaternion attitude hold, heading hold with the nose jets, sideways drift cancelling, a landing glide path and a
   hover descent.

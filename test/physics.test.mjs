@@ -14,7 +14,9 @@ for (const x of [-1.6, 1.6]) for (const z of [-0.55, 0.55]) nozzles.push({ p: ne
 for (const z of [-0.375, -0.135, 0.135, 0.375]) nozzles.push({ p: new V(-2.30, 0.52 - COM, z), e: new V(-1, 0, 0), group: "rear", Tmax: 7000 });
 for (const z of [-0.3, 0.3]) nozzles.push({ p: new V(2.2, 0.30 - COM, z), e: new V(1, 0, 0), group: "front", Tmax: 5000 });
 const RAMP = { cx: 4, R: 7.2, thMax: 0.9 * Math.PI, hw: 2.4, land: 1.4 };
-const sim = makeRoadsterSim(THREE, { WR: 0.36, COM, XW: [-1.49, 1.42], TRACK_Z: 0.84, X_TAKE: -10, nozzles, ramp: RAMP });
+const events = [];
+const sim = makeRoadsterSim(THREE, { WR: 0.36, COM, XW: [-1.49, 1.42], TRACK_Z: 0.84, X_TAKE: -10, nozzles, ramp: RAMP,
+  onBust: (b) => events.push("bust " + b.id), onHit: (b, v) => events.push(`hit ${b.id} ${v.toFixed(1)}`) });
 const st = sim.st;
 
 function run(scn, seconds, each) {
@@ -67,6 +69,27 @@ function check(name, fn) { try { fn(); console.log(`ok   ${name}`); } catch (e) 
   check(`ramp: lands facing opposite to the runway (forward x ${tdFwd.toFixed(2)})`, () => assert.ok(tdFwd < -0.95));
   check(`ramp: lands at the foot of the ramp (x ${tdX.toFixed(2)})`, () => assert.ok(tdX > -3 && tdX < RAMP.cx - 1));
   check(`ramp: then drives away from the ramp (x ${st.pos.x.toFixed(2)})`, () => assert.ok(st.pos.x < tdX - 5));
+}
+
+// drive mode: an autopilot holds the gas and uses the jets for walls; crates must burst, walls must be cleared
+{
+  const boxes = [
+    { id: "crates", x0: 40, x1: 41.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true },
+    { id: "wall", kind: "wall", x0: 90, x1: 91, y0: 0, y1: 2.4, z0: -8, z1: 8 },
+    { id: "slow-crates", x0: 160, x1: 161.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true },
+  ];
+  sim.reset("drive"); st.boxes = boxes; events.length = 0;
+  let maxH = 0, stoppedAt = null;
+  for (let i = 0; i < 40 / sim.DT; i++) {
+    st.input.throttle = st.pos.x < 120 ? 1 : st.vel.x > 4 ? -1 : 0.3;   // brake to a crawl into the last stack: it must not burst
+    st.input.jet = st.pos.x > 72 && st.pos.x < 92; st.input.steer = 0;
+    sim.substep(); maxH = Math.max(maxH, st.pos.y - COM);
+    if (st.pos.x > 150 && Math.abs(st.vel.x) < 0.05 && stoppedAt === null) stoppedAt = st.pos.x;
+  }
+  check("drive: crates burst when hit fast", () => assert.ok(events.includes("bust crates"), events.join(", ")));
+  check("drive: the jets clear the wall without touching it", () => { assert.ok(!events.some(e => e.startsWith("hit wall")), events.join(", ")); assert.ok(st.pos.x > 100); });
+  check(`drive: the jets hover rather than rocket (max ${maxH.toFixed(2)} m)`, () => assert.ok(maxH > 2.4 && maxH < 6));
+  check(`drive: crates hold when hit slowly (stopped at x ${stoppedAt?.toFixed(1)})`, () => { assert.ok(!events.includes("bust slow-crates")); assert.ok(stoppedAt !== null && stoppedAt < 160); });
 }
 
 if (failures) { console.log(`\n${failures} check(s) failed`); process.exit(1); }
