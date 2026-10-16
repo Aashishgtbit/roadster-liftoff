@@ -88,41 +88,44 @@ function landingRating(verticalSpeed: number): [string, number] {
 
 function succeed(verticalSpeed: number) {
   const [rating, landingPoints] = landingRating(verticalSpeed);
-  let score: number, title: string;
-  const stats: Stat[] = [];
+  const landing = `${rating} landing`, touchdown = Math.abs(verticalSpeed).toFixed(1) + " m/s";
+  let title: string, breakdown: [string, number][], stats: Stat[];
   if (attempt.stunt === "jump") {
     const rolls = fullRolls();
-    score = POINTS.cleared + rolls * POINTS.roll + landingPoints;
     title = rolls ? `Cleared with ${rolls === 1 ? "a roll" : rolls + " rolls"}` : "Cleared the lineup";
-    stats.push(["Rolls", String(rolls)], ["Peak", attempt.peakHeight.toFixed(1) + " m"]);
+    breakdown = [["Lineup cleared", POINTS.cleared], [rolls === 1 ? "Roll" : `Rolls × ${rolls}`, rolls * POINTS.roll], [landing, landingPoints]];
+    stats = [["Rolls", String(rolls)], ["Peak", attempt.peakHeight.toFixed(1) + " m"], ["Touchdown", touchdown]];
   } else {
     const facingBack = new THREE.Vector3(1, 0, 0).applyQuaternion(carState.orientation).x < -0.5;
-    score = rampScore() + POINTS.landed + (facingBack ? POINTS.facingBack : 0) + landingPoints;
     pushPoints("on its wheels", POINTS.landed);
     if (facingBack) pushPoints("facing back", POINTS.facingBack);
     title = facingBack ? "Flipped and landed" : "Landed";
-    stats.push(["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Facing", facingBack ? "back ✓" : "away"]);
+    breakdown = [
+      [`Climb to ${degrees(attempt.maxAngle)}`, Math.round(Math.min(1, attempt.maxAngle / RAMP.endAngle) * POINTS.climb)],
+      [`Hang ${attempt.hangTime.toFixed(1)} s`, Math.round(Math.min(3, attempt.hangTime) * POINTS.hangPerSecond)],
+      ["On its wheels", POINTS.landed], ["Facing back", facingBack ? POINTS.facingBack : 0], [landing, landingPoints],
+    ];
+    stats = [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Touchdown", touchdown]];
   }
-  stats.push(["Landing", `${rating} · ${Math.abs(verticalSpeed).toFixed(1)} m/s`]);
   if (landingPoints) pushPoints(`${rating.toLowerCase()} landing`, landingPoints);
-  finish(title, score, stats);
+  finish("success", title, breakdown.reduce((sum, [, points]) => sum + points, 0), stats, breakdown);
   playChime(520); setTimeout(() => playChime(780), 140);
 }
 
 function fail(title: string, hint: string) {
   const stats: Stat[] = attempt.stunt === "jump"
-    ? [["Rolls", String(fullRolls())], ["Peak", attempt.peakHeight.toFixed(1) + " m"]]
-    : [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"]];
-  finish(title, 0, stats, "Tip: " + hint);
+    ? [["Rolls", String(fullRolls())], ["Peak", attempt.peakHeight.toFixed(1) + " m"], ["Cars cleared", `${LINEUP.filter(v => carState.position.x > v.x + v.width / 2).length} / ${LINEUP.length}`]]
+    : [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Peak", attempt.peakHeight.toFixed(1) + " m"]];
+  finish("fail", title, 0, stats, [], hint[0].toUpperCase() + hint.slice(1));
 }
 
-function finish(title: string, score: number, stats: Stat[], note?: string) {
+function finish(outcome: "success" | "fail", title: string, score: number, stats: Stat[], breakdown: [string, number][], note?: string) {
   attempt.over = true;
   const newBest = score > 0 && (!best.score || score > best.score);
   if (newBest) { best.score = score; saveBest(attempt.stunt, best); }
   showToast(title);
   showResults({
-    title, score, stats, newBest, note,
+    outcome, mode: attempt.stunt === "jump" ? "Lineup jump" : "Ramp hang", title, score, breakdown, stats, newBest, note,
     best: best.score ? `${best.score} pts` : "—",
     primary: ["Try again", () => onRetry()],
     secondary: ["Watch the demo", () => onWatch()],

@@ -41,16 +41,7 @@
     <div class="g-help" id="gameHelp"><p class="g-tip" id="gameTip"></p></div>
     <div class="g-touch" id="gameTouch" aria-hidden="true"></div>
     <div class="g-over" id="gameOver" hidden>
-      <div class="g-card" role="dialog" aria-labelledby="goTitle">
-        <button class="g-close" id="goClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-        <span class="label" id="goTitle">Finish</span>
-        <p class="g-big"><b id="goScore">0</b> points</p>
-        <p class="g-new" id="goNew" hidden>New best!</p>
-        <div class="g-tiles" id="goStats"></div>
-        <p class="g-note" id="goNote" hidden></p>
-        <p class="g-row"><span>Your best <b id="goBest">—</b></span></p>
-        <div class="g-btns"><button class="btn primary" id="againBtn" type="button">Try again</button><button class="btn" id="newCourseBtn" type="button">New course</button></div>
-      </div>
+      <div class="g-card" id="goCard" role="dialog" aria-labelledby="goTitle"></div>
     </div>
   </div>
   <canvas id="scene" tabindex="0" aria-label="3D animation: a white roadster fires cold-gas thrusters, rolls upside down over a row of parked cars, a Semi and a Cybertruck at night, and lands." role="img"></canvas>

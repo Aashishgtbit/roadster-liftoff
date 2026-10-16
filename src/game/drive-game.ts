@@ -116,10 +116,20 @@ function endRun(finished: boolean) {
   if (finished && (!best.time || run.time < best.time)) { best.time = run.time; newBest = true; }
   if (finished && (!best.score || finalScore > best.score)) { best.score = finalScore; newBest = true; }
   if (newBest) saveBest("drive", best);
+  const times = (n: number, what: string) => n === 1 ? what : `${what} × ${n}`;
   showResults({
-    title: finished ? "Finish" : "Wrecked",
+    outcome: finished ? "success" : "fail",
+    mode: `Drive it · course #${(run.course?.seed ?? 0) % 10000}`,
+    title: finished ? `Finished in ${run.time.toFixed(1)} s` : "Wrecked",
     score: finalScore,
-    stats: [["Time", finished ? run.time.toFixed(1) + " s" : "—"], ["Crates busted", String(run.busts)], ["Flips", String(run.flips)], ["Fuel cans", String(run.cansCollected)]],
+    breakdown: [
+      [`Distance ${Math.round(Math.max(0, run.furthest))} m`, Math.round(Math.max(0, run.furthest))],
+      [times(run.busts, "Crates busted"), run.busts * POINTS.bust], [times(run.flips, "Flip"), run.flips * POINTS.flip],
+      [times(run.cansCollected, "Fuel can"), run.cansCollected * POINTS.can], [times(run.crashes, "Wall crash"), run.crashes * POINTS.crash],
+      ["Time bonus", finished ? Math.max(0, Math.round((60 - run.time) * 10)) : 0],
+    ],
+    note: finished ? undefined : "Three wall crashes wreck the car. Fly over walls with Space, or hit a yellow ramp fast",
+    stats: [["Time", finished ? run.time.toFixed(1) + " s" : "—"], ["Crates", String(run.busts)], ["Flips", String(run.flips)], ["Cans", String(run.cansCollected)]],
     best: best.time ? `${best.time.toFixed(1)} s · ${best.score} pts` : "—",
     newBest,
     primary: ["Same course", () => retry(false)],

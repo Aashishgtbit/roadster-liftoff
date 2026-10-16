@@ -19,15 +19,8 @@ export const setPanelFuel = createFuelGauge(byId("gameFuel"));
 
 export const resultsCard = {
   root: byId("gameOver"),
-  title: byId("goTitle"),
-  score: byId("goScore"),
-  stats: byId("goStats"),
-  note: byId("goNote"),
-  best: byId("goBest"),
-  newBest: byId("goNew"),
-  close: byId<HTMLButtonElement>("goClose"),
-  primary: byId<HTMLButtonElement>("againBtn"),
-  secondary: byId<HTMLButtonElement>("newCourseBtn"),
+  card: byId("goCard"),
+  primary: null as HTMLButtonElement | null,   // the current card's main action, for Enter
 };
 
 /** A label and its value, as shown on the scoreboard and the results card. */
