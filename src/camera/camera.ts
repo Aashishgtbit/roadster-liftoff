@@ -6,6 +6,7 @@ import { clamp } from "../core/math";
 import { buttons, canvas, setLabel } from "../ui/dom";
 import { RAMP } from "../config";
 import { camera } from "../core/renderer";
+import { hideOccluders } from "../core/occluders";
 import { car } from "../car/roadster";
 import { cameraShake } from "../game/feedback";
 import { carState } from "../run/sim";
@@ -122,6 +123,7 @@ export function updateCamera(dt: number) {
     controls.target.lerp(car.position, 1 - Math.exp(-dt * 4));
     camera.position.add(previousTarget.sub(controls.target).negate());
     controls.update();
+    hideOccluders(camera.position, car.position);
     return;
   }
   chooseShot();
@@ -136,6 +138,7 @@ export function updateCamera(dt: number) {
   }
   camera.position.copy(position);
   camera.lookAt(lookAt);
+  hideOccluders(camera.position, car.position);
   const shaking = cameraShake();
   if (shaking > 0) camera.position.add(shake.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shaking * 0.9));
 }

@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { BARRIERS, END_WALL_X, FINISH_X, START_WALL_X, TRACK_HALF_WIDTH } from "../config";
 import { canvasTexture, scene } from "../core/renderer";
+import { addOccluder } from "../core/occluders";
 import { body } from "../car/roadster";
 import type { Obstacle } from "../physics/types";
 import { CRATE_SIZE, WALL_HALF_WIDTH, WALL_HEIGHT, generateLayout, obstacleFor } from "./layout";
@@ -157,7 +158,7 @@ export function buildCourse(seed: number): BuiltCourse {
     for (let a = 0; a < w / 16; a++) for (let b = 0; b < 2; b++) { ctx.fillStyle = (a + b) % 2 ? "#111" : "#f2f2f2"; ctx.fillRect(a * 16, b * 16, 16, 16); }
   });
   const metal = new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.4 });
-  for (const z of [-8.5, 8.5]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.35, 5.6, 0.35), metal); post.position.set(FINISH_X, 2.8, z); course.add(post); }
+  for (const z of [-8.5, 8.5]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.35, 5.6, 0.35), metal); post.position.set(FINISH_X, 2.8, z); course.add(post); addOccluder([post], FINISH_X, z, 0.3); }
   const banner = new THREE.Mesh(new THREE.PlaneGeometry(17, 1.4), new THREE.MeshStandardMaterial({ map: checker, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: checker, emissiveIntensity: 0.6 }));
   banner.position.set(FINISH_X, 5, 0); banner.rotation.y = Math.PI / 2; course.add(banner);
   const finishLine = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 16).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: checker, roughness: 0.8 }));
@@ -179,6 +180,7 @@ export function buildCourse(seed: number): BuiltCourse {
   for (let x = 40; x < FINISH_X; x += 55) for (const z of [-13, 13]) {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 9, 8), metal); pole.position.set(x, 4.5, z); course.add(pole);
     const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.25, 0.5), lamp); head.position.set(x, 9.1, z * 0.94); course.add(head);
+    addOccluder([pole, head], x, z, 0.6);
   }
 }
 
