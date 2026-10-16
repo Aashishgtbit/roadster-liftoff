@@ -1,7 +1,7 @@
 {
   "name": "roadster-liftoff",
   "version": "2.1.0",
-  "description": "Unofficial fan app for the Oct 15, 2026 Tesla Roadster unveiling: physics-simulated 3D stunts and a drivable game with live synthesised sound.",
+  "description": "Fan-made, physics-simulated 3D take on the Tesla Roadster flying-car unveiling: watch or fly the ramp hang and lineup jump, or race a random night course. TypeScript, three.js, Vite.",
   "private": true,
   "type": "module",
   "scripts": {

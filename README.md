@@ -1,161 +1,137 @@
 # Roadster Liftoff
 
-An unofficial fan page about the Tesla Roadster unveiling on October 15, 2026, built around two
-real-time 3D stunts that are **computed by a physics simulation**, with sound generated live from the same numbers.
+A fan-made, physics-simulated 3D take on the Tesla Roadster unveiling of October 15, 2026. Watch the ramp hang
+and the lineup jump the way they happened on the night, fly them yourself, or race a random night course. Every
+move is computed by a rigid-body simulation running in your browser, and the sound is synthesised live from the
+same numbers.
 
-![The lineup jump](docs/lineup-jump.png)
+[![Test, build and deploy](https://github.com/Aashishgtbit/roadster-liftoff/actions/workflows/deploy.yml/badge.svg)](https://github.com/Aashishgtbit/roadster-liftoff/actions/workflows/deploy.yml)
+
+**[Play it in your browser →](https://aashishgtbit.github.io/roadster-liftoff/)**
+
+![The lineup jump: the car rolls upside down over a row of parked vehicles at night](docs/lineup-jump.webp)
 
 > **Fan project.** Not affiliated with or endorsed by Tesla or SpaceX. The car is a fan-made model built from
-> Tesla's public launch photos and videos, not official design data, and no Tesla images are included in this repo.
-> Masses, thrusts and other physics values are estimates. Tesla, Roadster, Cybertruck, Cybercab and Semi are
-> trademarks of Tesla, Inc.
+> Tesla's public launch photos and videos, not official design data, and the repo contains no Tesla images or
+> logos. Masses, thrusts and other physics values are estimates. Tesla, Roadster, Cybertruck, Cybercab and Semi
+> are trademarks of Tesla, Inc.
 
-## Two stunts and a game, all playable
+## What's in it
 
-Each stunt can be **watched** (the flight computer flies it, as on the night) or **played**: press **Play it**.
-While you play, every car you clear, each milestone up the ramp, every wall and stack you get past and the finish
-gets a banner and a chime; a crash flashes the screen red, a clean landing flashes it green with confetti. The
-cameras look ahead along your path, further the faster you go.
+| | Watch | Play |
+| --- | --- | --- |
+| **Lineup jump** | The car spools its floor jets, lifts off, rolls 360° over two sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s. | Lift off before the first car, roll in the air, and land on your wheels past the last one. The parked vehicles are solid. |
+| **Ramp hang** | Suction fans hold the car on a curved wall past vertical. It pauses upside down 12 m up, tips off the end, rolls 180° about its length and lands facing back. | Climb the wall, let go of the gas to hang upside down, drive off the end, flip, and land on your wheels. |
+| **Drive it** | | A new random 330 m course every run: bust crate stacks at 45 km/h or more, fly over walls on the jets or launch off kicker ramps, collect fuel, flip for points. Three wall crashes wreck the car. |
 
-**Lineup jump.** The car spools its floor jets, lifts off, rolls 360° along its direction of travel over two
-sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s. *Played:* lift off before
-the first car, roll in the air with Q / E, and land on your wheels past the Cybercab. The parked vehicles are solid.
-Score: clearing the lineup, each full roll, and how soft the landing is.
+While you play, a speedometer, fuel gauge, altimeter, attitude dial and a map of the ten nozzles show what the car
+is doing; a scoreboard tracks points as you earn them; banners, screen flashes and confetti mark each success or
+crash; and the camera looks ahead along your path. Best scores are kept in your browser.
 
-**Ramp hang.** Suction fans pull the car onto a tall curved wall. It climbs past vertical, pauses upside down
-about 12 m up, creeps to the end of the runway and tips off upside down. Past the runway it rolls 180° about
-its own length (an x-axis flip), so it comes up on its wheels facing the opposite way to the runway, hovers slowly
-down on its jets, settles at the foot of the ramp and drives away. *Played:* gas up the wall (the fans and motors
-hold you on it), let go to stop upside down at the top, gas off the end, roll 180° and land on your wheels. Score:
-how far you climbed, how long you hung, and the landing.
+![Playing Drive it: speedometer and fuel at the top, scoreboard on the right, every control along the bottom](docs/playing.webp)
 
-![The ramp hang, six moments](docs/ramp-hang.png)
+The second page, `about.html`, is the story of the night: what the car did, the spec sheet as announced, a 0–60
+drag strip at real speed, the trims, what is still unproven, the timeline, and the coverage.
 
-**Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one), boxed in by
-concrete barriers you can scrape along (but not fly out over), with grandstands beyond:
+![The story page](docs/story.webp)
 
-- **Crate stacks**: bust through at 45 km/h or more, or fly over.
-- **Striped walls**: fly over them on the jets, or hit a **yellow kicker ramp** fast and launch over with no fuel.
-  Hit a wall above 35 km/h and it is a crash; three crashes wreck the car.
-- **Fuel canisters**: the jets burn fuel; canisters refill it (some only reachable in the air), and the tanks
-  recompress slowly on the ground.
-- **Clock and record**: a live timer, with your best time and score kept in your browser.
+## Controls
 
-Score is distance plus 100 per crate stack, 25 per canister, 150 per flip landed on the wheels, minus 200 per crash,
-plus a time bonus at the finish.
+| Key | Touch | What it does |
+| --- | --- | --- |
+| `W` `↑` | ↑ | Gas (up the wall on the ramp) |
+| `S` `↓` | ↓ | Brake, then reverse. In the air: glide down to a soft landing on the jets |
+| `A` `D` `←` `→` | ‹ › | Steer: front wheels on the ground, nose jets in the air |
+| `Space` | jets | Floor jets: climb to a hover and hold it |
+| `Q` `E` | ⟲ ⟳ | Roll in the air. Let go past halfway and the car finishes the flip |
+| `Shift` | boost | Rear jets |
+| `R` | | Put the car back on its wheels |
+| `V` | | Camera view: Auto, Chase or Side |
+| `C` | | Free look: drag to orbit the car |
+| `P` · `M` · `F` | | Pause · sound · full screen |
+| `Enter` · `Esc` | | Start the run again · close the results card |
 
-![Drive it](docs/drive-it.png)
+On screen, **Play it / Watch demo** switches a stunt between flying it yourself and watching the flight computer,
+and **Wing** cycles the Track Mode aero (Road, High-Downforce, Low-Drag), which changes the downforce.
 
-## Run it
+## Run it locally
 
-Written in [TypeScript](https://www.typescriptlang.org) (strict), built with [Vite](https://vite.dev) and
-[three.js](https://threejs.org), tested with [Vitest](https://vitest.dev). You need Node 20 or newer.
+You need [Node.js](https://nodejs.org) 20 or newer.
 
 ```bash
+git clone https://github.com/Aashishgtbit/roadster-liftoff.git
+cd roadster-liftoff
 npm install
-npm run dev        # local dev server with hot reload
-npm test           # headless checks: every stunt, the game physics, and the course layouts
-npm run typecheck  # TypeScript, strict
-npm run build      # typecheck, then the static site in dist/
-npm run preview    # serve the built site
+npm run dev
 ```
 
-There are two pages: `index.html` is the full-window app (stunt tabs, story link, sound and **full screen**, or
-press `F`), and `about.html` is the story (the unveiling, the demo beats, the trims, a 0–60 drag strip, the
-timeline, what is still unproven, how the simulation works, and sources).
+Then open the address Vite prints (usually http://localhost:5173).
 
-## Project layout
-
-```
-index.html, about.html       page markup; each loads one entry module
-src/
-  main.ts                    app entry: styles, scene modules, first frame, render loop
-  config.ts                  shared constants: car dimensions, ramp shape, course size and boundaries
-  physics/                   the simulation: pure, no DOM (the tests run it directly)
-    simulation.ts              forces, collisions and integration at 240 Hz
-    flight-computer.ts         how each stunt and the player's controls fire the nozzles
-    contacts.ts                wheel rays against the ground, boxes, kicker ramps and the curved wall
-    constants.ts               mass, suspension, tyres, aero, stunt and game tuning
-    types.ts                   SimState, Obstacle, Nozzle, Phase…
-  car/                       the Roadster model: geometry, materials, nozzle layout, assembly
-  scene/                     sky, ground, markings, floodlights
-  stunts/                    the lineup and the ramp
-  game/                      playing: modes, input (keys and touch), Drive it (layout, course, rules), the stunt
-                             challenges, results, records
-  run/                       the app's simulation instance, and the runner that applies it to the scene
-  camera/, audio/, effects/, core/, ui/
-  styles/                    tokens, buttons, stage, game, app, story
-  story/                     the story page's script
-test/                        Vitest: physics.test.ts, layout.test.ts
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to add a stunt or an obstacle.
-
-Driving and flying (Drive it and the played stunts). While you play, every control is shown along the bottom as a
-keycap that lights up while held, and the live score, a feed of points as you earn them, and the run's stats sit on
-the right:
-
-| Key | Touch | Does |
-| --- | --- | --- |
-| `W` / `↑` | ↑ | Accelerate (up the wall on the ramp) |
-| `S` / `↓` | ↓ | Brake, then reverse; in the air, glide down to a soft landing on the jets |
-| `A` `D` / `←` `→` | ‹ › | Steer (front wheels on the ground, nose jets in the air) |
-| `Q` `E` | ⟲ ⟳ | In the air: roll (flip) about the car's length; let go mid-flip and it finishes the roll |
-| `Space` | jets | Floor jets: climb to a hover and hold it |
-| `Shift` | boost | Rear jets |
-| `R` | | Put the car back on its wheels (it also rights itself if stuck upside down) |
-| `V` | | Camera view while playing: Auto (side-on at the ramp, chase elsewhere) → Chase → Side (remembered) |
-| `P` · `C` · `M` · `F` | | Pause · free-look camera · sound · full screen (also while watching) |
-| `Enter` | | Start the run again (on the results card: try again) · `Esc` closes the card |
-
-Controls in the 3D view:
-
-| Control | What it does |
+| Script | Does |
 | --- | --- |
-| **Choose a stunt** | Switch between Lineup jump, Drive it and Ramp hang |
-| **Sound** | Turn the live sound on or off (browsers only allow audio after a click) |
-| **Wing** | Cycle Tesla's Track Mode aero: Road (stowed), High-Downforce, Low-Drag |
-| **Play it / Watch demo** | Fly the stunt yourself, or watch the flight computer do it |
-| **View** | While playing: Auto, Chase or Side camera |
-| **Free look** | Drag to orbit the car; click again to return to the cinematic camera |
-| **Pause / Replay** | Pause the run or restart it |
+| `npm run dev` | Dev server with hot reload |
+| `npm test` | Headless checks of every stunt, the game physics and the course generator (Vitest) |
+| `npm run typecheck` | Strict TypeScript over the app, the tests and the config |
+| `npm run build` | Type-check, then build the static site into `dist/` |
+| `npm run preview` | Serve the built site |
 
-## How the simulation works
+## How it works
 
-Everything runs at a fixed 240 Hz in the browser:
+The simulation steps at a fixed 240 Hz, independent of the frame rate:
 
-- **Rigid body.** A 1,900 kg car with separate roll, pitch and yaw inertia.
-- **Suspension and tyres.** Each wheel casts a ray to the ground or the curved ramp and rides its own spring and
-  damper. Tyre grip stays inside a friction circle (μ 1.15).
-- **Ten cold-gas nozzles.** Four under the floor near the wheel arches, four in the diffuser, two in the nose,
-  each pushing from its real position with about 40 ms of valve lag, so uneven firing turns the car.
-- **Suction fans.** Up to 1.6 times the car's weight, pulling the floor toward the surface the wheels are on.
+- **Rigid body.** A 1,900 kg car with its own inertia for roll, pitch and yaw, integrated with semi-implicit
+  Euler and Euler's equations for the spin.
+- **Suspension and tyres.** Each wheel casts a ray to the ground, a box top, a kicker ramp or the curved wall, and
+  rides its own spring, damper and bump stop. Tyre forces stay inside a friction circle (μ 1.15).
+- **Ten cold-gas nozzles.** Four under the floor, four in the diffuser, two in the nose. Each pushes from its own
+  position with about 40 ms of valve lag, so firing one side harder turns the car.
+- **Suction fans** pull the floor toward the wall with up to 1.6 times the car's weight.
 - **Aero.** Drag, plus downforce that depends on the wing mode.
-- **Player control (Drive it).** Throttle and brake through the tyres, front-wheel steering with less lock at speed,
-  jets that hold the car level with a quaternion attitude controller and a height hold, and solid obstacle boxes:
-  the hull collides with them, wheels can land on top of them and drive up kicker ramps, crates give way above
-  12.5 m/s, and a solid hit is an impact (the speed into the obstacle goes at once) so nothing can tunnel through a
-  wall. An in-air stability assist keeps the car level after a ramp launch.
-- **Flight computer.** The car was remote-operated on the night; here a controller flies each stunt phase by phase:
-  roll profiles, a quaternion attitude hold, heading hold with the nose jets, sideways drift cancelling, a landing glide path and a
-  hover descent.
+- **Collisions.** Hull points push out of the ground, the ramp and obstacles; a solid hit removes the speed into
+  the obstacle at once, so nothing tunnels through a wall.
+- **Flight computer.** The demos are scripted as phases (spool, lift, roll, glide, touchdown…) using roll
+  profiles, a quaternion attitude controller, heading hold and a glide-path landing. When you play, the same
+  thrusters take your controls, with a hover height hold and a stability assist.
 
-The sound is synthesised with the Web Audio API from the simulation state: motor whine from wheel speed, tyre
-roar, jet hiss and roar from total thrust, a pop as each valve opens, fan whine from suction, and a landing thump
-scaled by the touchdown speed. Volume and stereo pan follow the camera.
+Sound is Web Audio, generated from the simulation state: motor whine from wheel speed, tyre roar, jet hiss and
+roar from total thrust, a pop as each valve opens, fan whine, and a landing thump scaled by the touchdown speed.
+
+## Project structure
+
+```
+index.html            the game: full-window 3D stage
+about.html            the story page
+src/
+  main.ts             app entry: loads the scene, warms up the first frame, runs the render loop
+  config.ts           shared constants: car dimensions, ramp shape, course size and boundaries
+  physics/            the simulation; pure TypeScript, no DOM, so the tests run it directly
+  car/                the Roadster model: measured cross-sections, materials, nozzle layout
+  game/               playing: modes, input, Drive it, the stunt challenges, scoring, results
+  run/                the app's simulation instance and the runner that applies it to the scene
+  scene/, stunts/     the night, the lights, the parked lineup and the ramp
+  camera/, audio/     cinematic shots, play cameras, synthesised sound
+  effects/, ui/       gas plumes, SVG gauges, the telemetry cluster, buttons
+  styles/             CSS, one file per area
+  story/              the story page's script and images
+test/                 Vitest: the stunts, the played stunts, the course layouts
+```
+
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how the pieces fit together, the conventions, and step-by-step
+recipes for tuning the car, adding a control, an obstacle or a stunt.
 
 ## Tests
 
-`npm test` runs the real physics module with the car's real nozzle layout, headlessly, and checks every outcome:
-lineup clearance, apex, a full roll, landing speeds, drift, hang height, the ramp stunt's x-axis flip and landing
-heading, crate busting, flying over walls, kicker-ramp launches, that a fast wall hit cannot tunnel through, and
-that the boundaries keep the car on the track. It also checks that every random course layout is
-fair: nothing outside the track, never a ramp into a wall first, and room to land between obstacles.
+`npm test` runs the real physics with the car's real nozzle layout, headlessly. It checks that the lineup jump
+clears every vehicle with a full roll and a soft landing, that the ramp hang hangs, flips about the car's length
+and lands facing back, that crates bust only at speed, that the jets clear walls, that a flat-out wall hit cannot
+tunnel through, and that the track boundaries hold. An autopilot that presses the player's keys proves both
+stunts and a flip can be done with the controls, and every random course layout is checked for fairness.
 
-## Publish with GitHub Pages
+## Deploying
 
-The workflow in `.github/workflows/deploy.yml` tests and builds every push and pull request, and deploys `main`.
-One-time setup: in the repository settings, open **Pages** and set **Source** to **GitHub Actions**.
+Every push and pull request runs the type-check, the tests and the build
+([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)). Pushes to `main` deploy to GitHub Pages. To turn
+that on once: repository **Settings → Pages → Source: GitHub Actions**.
 
 ## Sources
 
@@ -165,3 +141,6 @@ One-time setup: in the repository settings, open **Pages** and set **Source** to
 - [Dezeen: Tesla launches flying Roadster concept car](https://www.dezeen.com/2026/10/16/tesla-launches-flying-roadster-concept-car/)
 - [Fox Business: New Roadster takes flight at SpaceX facility](https://www.foxbusiness.com/technology/teslas-new-roadster-makes-flying-debut-hitting-60-mph-under-second)
 - Tesla's launch posts on X: [the ramp](https://x.com/Tesla/status/2110913438293647789), [Track Mode](https://x.com/Tesla/status/2110905133785829671), and [Elon Musk's lineup jump](https://x.com/elonmusk/status/2110913107094606330)
+
+Built with [three.js](https://threejs.org), [Vite](https://vite.dev), [TypeScript](https://www.typescriptlang.org)
+and [Vitest](https://vitest.dev).
