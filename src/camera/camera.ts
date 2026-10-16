@@ -7,7 +7,6 @@ import { RAMP } from "../config";
 import { camera } from "../core/renderer";
 import { car } from "../car/roadster";
 import { cameraShake } from "../game/feedback";
-import { isRunOver } from "../game/modes";
 import { carState } from "../run/sim";
 
 const position = new THREE.Vector3(), lookAt = new THREE.Vector3();             // where the camera is
@@ -29,8 +28,6 @@ function chooseShot() {
     heading.normalize();
     wantPosition.copy(car.position).addScaledVector(heading, -9.5 * wide); wantPosition.y = Math.max(2.6 * wide, y + 2.9 * wide);
     wantLookAt.copy(car.position).addScaledVector(heading, 7); wantLookAt.y = y + 0.4;
-    // run over: rise and look lower, so the car sits high in the frame, clear of the results card
-    if (isRunOver()) { wantPosition.y += 1.6; wantLookAt.y -= 2.4; }
     return;
   }
   if (carState.scenario === "ramp") {   // wide on the climb, low and close on the hang

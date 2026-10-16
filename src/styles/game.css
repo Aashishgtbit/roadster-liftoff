@@ -47,21 +47,30 @@
 @media (pointer: coarse) { .g-touch { display: flex; } .g-help { display: none; } }
 
 /* results card */
-/* results: a compact card docked at the side, no backdrop, so the scene stays in view behind it */
-.g-over { position: absolute; top: 14px; right: var(--gutter); pointer-events: none; animation: g-slide-in .3s ease-out; }
-@keyframes g-slide-in { from { opacity: 0; transform: translateX(24px); } }
-.g-card { position: relative; display: grid; gap: 8px; justify-items: center; text-align: center; width: min(300px, calc(100vw - 2 * var(--gutter))); padding: 14px 16px 16px;
-  background: rgba(16,23,42,.78); border: 1px solid var(--rule); border-radius: 14px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); pointer-events: auto; }
+/* results: a centred glass card; no backdrop, so the scene keeps running in view behind it */
+.g-over { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.g-card { position: relative; display: grid; gap: 10px; justify-items: center; text-align: center; width: min(400px, calc(100vw - 2 * var(--gutter))); padding: 20px 22px;
+  background: linear-gradient(155deg, rgba(255,255,255,.16), rgba(255,255,255,.04) 45%, rgba(196,236,255,.07));
+  border: 1px solid rgba(255,255,255,.22); border-radius: 20px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(7px) saturate(150%); -webkit-backdrop-filter: blur(7px) saturate(150%);
+  text-shadow: 0 1px 8px rgba(0,0,0,.45); pointer-events: auto; animation: g-pop .28s ease-out; }
+@keyframes g-pop { from { opacity: 0; transform: scale(.94); } }
+.g-card #goTitle { color: #f1f4fa; letter-spacing: .16em; }
+.g-card .btn:not(.primary) { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.24); }
+.g-card .btn:not(.primary):hover { background: rgba(255,255,255,.16); }
+.game.over .g-toast { opacity: 0; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .g-card { background: rgba(16,23,42,.88); } }
 .g-close { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
-.g-close:hover { background: var(--rule); color: var(--fg); }
+.g-close:hover { background: rgba(255,255,255,.14); color: var(--fg); }
 .g-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1.1; text-transform: uppercase; }
+.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1.1; text-transform: uppercase; }
 .g-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; }
-.g-tiles span { display: grid; gap: 1px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 9px; background: rgba(9,13,24,.5); }
+.g-tiles span { display: grid; gap: 1px; padding: 7px 8px; border: 1px solid rgba(255,255,255,.14); border-radius: 12px; background: rgba(255,255,255,.07); }
 .g-tiles b { font-family: var(--display); font-weight: 800; font-size: 18px; line-height: 1.15; }
-.g-tiles small { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.g-tiles small { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #b9c3d6; }
 .g-note { margin: 0; color: var(--amber); font-size: 13px; line-height: 1.4; }
-.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 13px; }
+.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: #c5cddd; font-size: 13px; }
 .g-row b { color: var(--fg); }
 .g-new { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
 .g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -77,19 +86,4 @@
 }
 /* after a run the controls are locked: the help and touch buttons step aside */
 .game.over .g-help, .game.over .g-touch { display: none; }
-/* narrower screens: the top is taken by the panel, so the card becomes a short strip along the bottom */
-@media (max-width: 1100px) {
-  .g-over { top: auto; bottom: 16px; left: var(--gutter); right: auto; animation: none; }
-  .g-card { width: min(440px, calc(100vw - 2 * var(--gutter))); grid-template-columns: 1fr auto; justify-items: start; text-align: left; gap: 4px 14px; padding: 10px 14px; }
-  .g-card > #goTitle, .g-card > .g-big, .g-card > .g-new { grid-column: 1; }
-  .g-big { font-size: 26px; }
-  .g-btns { grid-column: 2; grid-row: 1 / span 3; flex-direction: column; align-self: end; }
-  .g-btns .btn { padding: 7px 12px; }
-  .g-tiles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
-  .g-tiles span { padding: 4px 8px; }
-  .g-tiles b { font-size: 15px; }
-  .g-note, .g-row { grid-column: 1 / -1; }
-  .g-close { top: 4px; right: auto; left: auto; position: static; grid-column: 2; grid-row: 1; justify-self: end; margin: -4px -6px 0 0; }
-  .g-btns { grid-row: 2 / span 2; }
-}
-@media (max-width: 640px) { .g-over { bottom: 16px; } }
+@media (max-width: 640px) { .g-card { padding: 16px; gap: 8px; } .g-big { font-size: 32px; } }

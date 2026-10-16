@@ -27,8 +27,6 @@ let watchDemo: (scenario: Scenario) => void = () => {};
 export function onWatchDemo(handler: (scenario: Scenario) => void) { watchDemo = handler; }
 
 export const isPlaying = () => carState.pilot === "player";
-/** The run has ended and the results card is up. */
-export const isRunOver = () => isPlaying() && (carState.scenario === "drive" ? isDriveOver() : isStuntOver());
 
 /** Put the car on the start line of `scenario`, flown by `pilot`, with that scenario's obstacles. */
 export function restartRun(scenario: Scenario, pilot: Pilot) {
