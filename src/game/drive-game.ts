@@ -9,7 +9,9 @@ import { buildCourse, course, crateGeometry, crateMaterial, followLight } from "
 import type { BuiltCourse } from "./course";
 import { shakeCamera, showToast } from "./feedback";
 import { loadBest, saveBest } from "./records";
-import { showResults } from "./results";
+import { showResultsSoon } from "./results";
+import { confetti, flashScreen, showBanner } from "./celebrate";
+import { setCheckpointState, setCheckpoints } from "../effects/checkpoints";
 import { pushPoints, setScoreboard } from "./ui";
 
 const CRASH_SPEED = 9.7;   // m/s (35 km/h)
@@ -50,6 +52,13 @@ export function startDrive(newLayout: boolean, onRetry: (newLayout: boolean) => 
   for (const d of run.debris) course.remove(d.mesh);
   Object.assign(run, { debris: [], started: false, over: false, time: 0, busts: 0, cansCollected: 0, crashes: 0, flips: 0, furthest: 0 });
   carState.obstacles = built.obstacles;
+  // a ring over every wall and crate stack, and one standing across the finish
+  setCheckpoints([
+    ...built.obstacles.filter(o => o.kind === "wall" || o.kind === "crates").map(o => ({
+      id: o.id, x: (o.minX + o.maxX) / 2, y: (o.kind === "wall" || o.kind === "crates" ? o.maxY : 0) + 1.4, z: (o.minZ + o.maxZ) / 2, radius: 1, kind: "gate" as const,
+    })),
+    { id: "finish", x: FINISH_X, y: 3.2, z: 0, radius: 2.6, kind: "gate", facing: "along" },
+  ]);
   showToast("Gas to start");
 }
 
@@ -61,6 +70,8 @@ export function onDriveBust(stack: BoxObstacle, speed: number) {
   if (!mesh) return;
   mesh.visible = false;
   run.busts++;
+  setCheckpointState(stack.id, "cleared");
+  showBanner("Busted!", "good", `${kmh(speed)} km/h · +${POINTS.bust}`, 1.1);
   shakeCamera(0.25);
   showToast(`Busted at ${kmh(speed)} km/h`);
   pushPoints("crates busted", POINTS.bust);
@@ -82,7 +93,7 @@ export function onDriveLanding(flips: number) {
   if (run.over || flips < 1) return;
   if (new THREE.Vector3(0, 1, 0).applyQuaternion(carState.orientation).y < 0.7) return;
   run.flips += flips;
-  showToast(flips > 1 ? `${flips}× flip!` : "Flip!");
+  showBanner(flips > 1 ? `${flips}× flip!` : "Flip!", "good", "+" + flips * POINTS.flip, 1.2);
   pushPoints(flips > 1 ? `${flips}× flip` : "flip", flips * POINTS.flip);
   playChime(700);
 }
@@ -98,11 +109,13 @@ export function onDriveHit(obstacle: BoxObstacle, speed: number) {
   if (obstacle.kind === "wall" && speed > CRASH_SPEED) {   // a crash: costs fuel and points; three wreck the car
     run.crashes++;
     shakeCamera(0.6);
+    setCheckpointState(obstacle.id, "failed");
+    flashScreen("bad");
     carState.fuel = Math.max(0, carState.fuel - 15);
     pushPoints("wall crash", POINTS.crash);
     playThump(1); playNoiseBurst(0.6, "lowpass", 700, 0.9); playNoiseBurst(0.3, "highpass", 3000, 0.4);
     if (run.crashes >= MAX_CRASHES) endRun(false);
-    else showToast(`Crash at ${kmh(speed)} km/h · ${MAX_CRASHES - run.crashes} left`);
+    else showBanner("Crash!", "bad", `${kmh(speed)} km/h · ${MAX_CRASHES - run.crashes} left`, 1.4);
     return;
   }
   showToast(obstacle.kind === "wall" ? "Walls don't bust · fly over with Space" : `Too slow to bust (${kmh(speed)} km/h) · go 45+`);
@@ -117,7 +130,11 @@ function endRun(finished: boolean) {
   if (finished && (!best.score || finalScore > best.score)) { best.score = finalScore; newBest = true; }
   if (newBest) saveBest("drive", best);
   const times = (n: number, what: string) => n === 1 ? what : `${what} × ${n}`;
-  showResults({
+  setCheckpointState("finish", finished ? "cleared" : "failed");
+  flashScreen(finished ? "good" : "bad");
+  showBanner(finished ? "Finish!" : "Wrecked!", finished ? "good" : "bad", finished ? `${run.time.toFixed(1)} s` : "three wall crashes", 1.8);
+  if (finished) confetti(); else shakeCamera(0.6);
+  showResultsSoon({
     outcome: finished ? "success" : "fail",
     mode: `Drive it · course #${(run.course?.seed ?? 0) % 10000}`,
     title: finished ? `Finished in ${run.time.toFixed(1)} s` : "Wrecked",
@@ -135,7 +152,6 @@ function endRun(finished: boolean) {
     primary: ["Same course", () => retry(false)],
     secondary: ["New course", () => retry(true)],
   });
-  showToast(finished ? "Finish!" : "Wrecked");
   if (finished) { playChime(520); setTimeout(() => playChime(780), 140); }
 }
 
@@ -162,6 +178,10 @@ export function updateDrive(dt: number) {
     m.rotation.x += d.spin.x * dt; m.rotation.y += d.spin.y * dt; m.rotation.z += d.spin.z * dt;
     if (m.position.y < 0.6) { m.position.y = 0.6; d.velocity.y *= -0.3; d.velocity.x *= 0.7; d.velocity.z *= 0.7; d.spin.multiplyScalar(0.7); }
     if ((d.life -= dt) < 0) { course.remove(m); run.debris.splice(i, 1); }
+  }
+  // walls and stacks the car gets past (over, around, or through) burst green
+  for (const o of run.course?.obstacles ?? []) {
+    if ((o.kind === "wall" || o.kind === "crates") && carState.position.x > o.maxX + 1 && setCheckpointState(o.id, "cleared") && o.kind === "wall") showBanner("Cleared!", "good", "", 0.9);
   }
   if (!run.over && carState.position.x >= FINISH_X) endRun(true);
   setScoreboard(score(), [

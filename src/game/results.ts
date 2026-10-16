@@ -112,8 +112,16 @@ export function showResults(r: Results) {
 
 export function hideResults() { resultsCard.root.hidden = true; }
 
-/** A new run: controls back. */
-export function clearResults() { hideResults(); gameUI.root.classList.remove("over"); }
+let pending = 0;
+/** Show the card after the end-of-run moment (banner, flash, confetti) has played. */
+export function showResultsSoon(results: Results, delayMs = 1300) {
+  clearTimeout(pending);
+  gameUI.root.classList.add("over");
+  pending = window.setTimeout(() => showResults(results), delayMs);
+}
+
+/** A new run: no card, controls back. */
+export function clearResults() { clearTimeout(pending); hideResults(); gameUI.root.classList.remove("over"); }
 
 // Enter: the card's primary action (try again / same course), or start the run again while playing;
 // Escape: just close the card

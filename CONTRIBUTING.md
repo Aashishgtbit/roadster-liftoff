@@ -42,7 +42,7 @@ places the camera, `updateSound()` sets the synth levels and `composer.render()`
 | `src/stunts/` | Scenery for the scripted stunts: the parked lineup and the curved ramp. |
 | `src/game/` | Playing. `modes.ts` decides who flies (the scripted flight computer or the player) and routes the physics events; `input.ts` is the keyboard and touch controls (one `ACTIONS` table draws the keycaps and touch buttons); `drive-game.ts` is Drive it's rules, with `layout.ts` (random courses, pure, tested) and `course.ts` (the 3D course); `stunt-play.ts` is the played lineup jump and ramp hang; `results.ts`, `records.ts`, `feedback.ts` (toasts, shake) and `ui.ts` are shared. |
 | `src/run/` | `sim.ts` creates the app's one simulation; `runner.ts` applies it to the scene and switches stunts. |
-| `src/camera/`, `src/audio/`, `src/effects/` | Camera shots, synthesised sound, gas plumes. |
+| `src/camera/`, `src/audio/`, `src/effects/` | Camera shots, synthesised sound, gas plumes, and the checkpoint rings (`effects/checkpoints.ts`); on-screen banners, flashes and confetti are in `game/celebrate.ts`. |
 | `src/core/` | Renderer and scene, bloom and resizing, the shared `app` flags, maths helpers. |
 | `src/ui/` | Element handles (`byId`, `setLabel`), buttons, full screen, the SVG gauges (`gauges.ts`) and the telemetry cluster (`hud.ts`). |
 | `src/styles/` | `tokens.css` (colours and type), `buttons.css`, `stage.css`, `game.css`, `gauges.css`, `app.css` (top bar and layout), `story.css`. |

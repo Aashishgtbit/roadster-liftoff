@@ -13,6 +13,9 @@ real-time 3D stunts that are **computed by a physics simulation**, with sound ge
 ## Two stunts and a game, all playable
 
 Each stunt can be **watched** (the flight computer flies it, as on the night) or **played**: press **Play it**.
+While you play, glowing rings mark what you have to get past (each parked car, the milestones up the ramp, every
+wall and crate stack, the finish) and a pad marks where to land: they pulse blue, burst green when you make it and
+flash red when you hit them, with a banner, an edge flash and confetti for the big moments.
 
 **Lineup jump.** The car spools its floor jets, lifts off, rolls 360° along its direction of travel over two
 sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s. *Played:* lift off before

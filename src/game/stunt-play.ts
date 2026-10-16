@@ -12,7 +12,9 @@ import type { BoxObstacle, Scenario } from "../physics/types";
 import { LINEUP, LINEUP_END_X } from "../stunts/lineup-layout";
 import { shakeCamera, showToast } from "./feedback";
 import { loadBest, saveBest } from "./records";
-import { showResults } from "./results";
+import { showResultsSoon } from "./results";
+import { confetti, flashScreen, showBanner } from "./celebrate";
+import { setCheckpointState, setCheckpoints } from "../effects/checkpoints";
 import { pushPoints, setScoreboard } from "./ui";
 import type { Stat } from "./ui";
 
@@ -52,14 +54,32 @@ export function startStunt(stunt: Stunt, retry: () => void, watch: () => void) {
   best = loadBest(stunt);
   onRetry = retry; onWatch = watch;
   showToast(OBJECTIVES[stunt], 3.2);
+  setCheckpoints(stunt === "jump" ? [
+    ...LINEUP.map(v => ({ id: v.name, x: v.x, y: v.height + 2.2, z: 0, radius: 1.4, kind: "gate" as const })),
+    { id: "landing", x: LINEUP_END_X + 5, y: 0, z: 0, radius: 3.2, kind: "pad" },
+  ] : [
+    ...RAMP_MARKS.map(m => {
+      const r = RAMP.radius - 1.6;   // a little inside the curve, over the car
+      return { id: m.id, x: RAMP.startX + r * Math.sin(m.angle), y: RAMP.radius - r * Math.cos(m.angle), z: 0, radius: 1.3, kind: "gate" as const, facing: "along" as const };
+    }),
+    { id: "landing", x: RAMP.landingX - 1, y: 0, z: 0, radius: 2.8, kind: "pad" },
+  ]);
 }
+
+/** Milestones up the ramp: a ring at each, and a banner as the car gets there. */
+const RAMP_MARKS = [
+  { id: "vertical", angle: Math.PI / 2, title: "Vertical!", subtitle: "the fans hold you on" },
+  { id: "inverted", angle: 0.74 * Math.PI, title: "Upside down!", subtitle: "let go of the gas to hang" },
+  { id: "lip", angle: RAMP.endAngle - 0.06, title: "The lip", subtitle: "gas off the end, then roll 180°" },
+];
 
 /** The car touched a parked vehicle. */
 export function onStuntHit(obstacle: BoxObstacle, speed: number) {
   if (attempt.over || obstacle.kind !== "vehicle") return;
   shakeCamera(0.6);
   playThump(1); playNoiseBurst(0.6, "lowpass", 700, 0.9);
-  fail(`Hit the ${obstacle.id}`, `${Math.round(speed * 3.6)} km/h into it`);
+  setCheckpointState(obstacle.id, "failed");
+  fail(`Hit the ${obstacle.id} at ${Math.round(speed * 3.6)} km/h`, "lift off earlier: hold Space before the first car", "Crash!");
 }
 
 /** The wheels touched down after a flight. */
@@ -68,16 +88,17 @@ export function onStuntLanding(verticalSpeed: number) {
   const upright = carUp().y > 0.7, x = carState.position.x;
   if (attempt.stunt === "jump") {
     if (x < LINEUP[0].x - 2) return;   // a hop before the lineup: keep going
-    if (!upright) return fail("Landed on the roof", "keep rolling until the wheels face down");
+    if (!upright) return fail("Landed on the roof", "keep rolling until the wheels face down (or let go past halfway)", "Roof landing!");
     if (carState.position.y > COM_HEIGHT + 0.6) {
       const under = LINEUP.find(v => Math.abs(x - v.x) < v.width / 2 + 1);
-      return fail(`Parked on the ${under?.name ?? "roof"}`, "hold Space to fly past the last car");
+      if (under) setCheckpointState(under.name, "failed");
+      return fail(`Parked on the ${under?.name ?? "roof"}`, "hold Space to fly past the last car", "Too short!");
     }
     if (x > LINEUP_END_X) succeed(verticalSpeed);
     return;
   }
   if (!attempt.offTheWall) return;
-  if (!upright) return fail("Landed on the roof", "roll 180° with Q or E as you leave the wall");
+  if (!upright) return fail("Landed on the roof", "roll 180° with Q or E as you leave the wall", "Roof landing!");
   succeed(verticalSpeed);
 }
 
@@ -108,11 +129,19 @@ function succeed(verticalSpeed: number) {
     stats = [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Touchdown", touchdown]];
   }
   if (landingPoints) pushPoints(`${rating.toLowerCase()} landing`, landingPoints);
+  setCheckpointState("landing", "cleared");
+  flashScreen("good");
+  showBanner(attempt.stunt === "jump" ? "Cleared!" : "Stuck it!", "good", `${title} · ${rating.toLowerCase()} landing`, 1.8);
+  confetti();
   finish("success", title, breakdown.reduce((sum, [, points]) => sum + points, 0), stats, breakdown);
   playChime(520); setTimeout(() => playChime(780), 140);
 }
 
-function fail(title: string, hint: string) {
+function fail(title: string, hint: string, banner: string) {
+  setCheckpointState("landing", "failed");
+  flashScreen("bad");
+  shakeCamera(0.5);
+  showBanner(banner, "bad", title, 1.8);
   const stats: Stat[] = attempt.stunt === "jump"
     ? [["Rolls", String(fullRolls())], ["Peak", attempt.peakHeight.toFixed(1) + " m"], ["Cars cleared", `${LINEUP.filter(v => carState.position.x > v.x + v.width / 2).length} / ${LINEUP.length}`]]
     : [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Peak", attempt.peakHeight.toFixed(1) + " m"]];
@@ -123,8 +152,7 @@ function finish(outcome: "success" | "fail", title: string, score: number, stats
   attempt.over = true;
   const newBest = score > 0 && (!best.score || score > best.score);
   if (newBest) { best.score = score; saveBest(attempt.stunt, best); }
-  showToast(title);
-  showResults({
+  showResultsSoon({
     outcome, mode: attempt.stunt === "jump" ? "Lineup jump" : "Ramp hang", title, score, breakdown, stats, newBest, note,
     best: best.score ? `${best.score} pts` : "—",
     primary: ["Try again", () => onRetry()],
@@ -147,11 +175,18 @@ export function updateStunt(dt: number) {
   if (attempt.stunt === "jump") {
     const cleared = LINEUP.filter(v => carState.position.x > v.x + v.width / 2).length, rolls = fullRolls();
     // announce points as they are earned (they count once the car lands on its wheels)
-    if (rolls > attempt.rollsCounted) { pushPoints(rolls > 1 ? `roll ${rolls}` : "roll", (rolls - attempt.rollsCounted) * POINTS.roll); attempt.rollsCounted = rolls; }
-    if (!attempt.cleared && carState.position.x > LINEUP_END_X) { attempt.cleared = true; pushPoints("lineup cleared", POINTS.cleared); }
+    if (rolls > attempt.rollsCounted) {
+      pushPoints(rolls > 1 ? `roll ${rolls}` : "roll", (rolls - attempt.rollsCounted) * POINTS.roll);
+      attempt.rollsCounted = rolls;
+      showBanner(rolls > 1 ? `${rolls}× roll!` : "Full roll!", "info", "+" + POINTS.roll, 1.1);
+    }
+    // each car the car gets past bursts green
+    for (const v of LINEUP) if (carState.position.x > v.x + v.width / 2 && setCheckpointState(v.name, "cleared")) playChime(520 + 60 * LINEUP.indexOf(v));
+    if (!attempt.cleared && carState.position.x > LINEUP_END_X) { attempt.cleared = true; pushPoints("lineup cleared", POINTS.cleared); showBanner("Lineup cleared!", "info", "now land on your wheels", 1.4); }
     const live = (attempt.cleared ? POINTS.cleared : 0) + rolls * POINTS.roll;
     setScoreboard(live, [["Rolls", String(rolls)], ["Cars cleared", `${cleared} / ${LINEUP.length}`], ["Height", height.toFixed(1) + " m"], ["Best", bestText]]);
   } else {
+    for (const mark of RAMP_MARKS) if (attempt.maxAngle >= mark.angle && setCheckpointState(mark.id, "cleared")) { showBanner(mark.title, "info", mark.subtitle, 1.4); playChime(600); }
     setScoreboard(rampScore(), [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Height", height.toFixed(1) + " m"], ["Best", bestText]]);
   }
 }
