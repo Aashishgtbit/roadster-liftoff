@@ -1,4 +1,5 @@
 // The card at the end of a run: title, score, stats, best, and two buttons.
+import { buttons } from "../ui/dom";
 import { gameUI, resultsCard } from "./ui";
 import type { Stat } from "./ui";
 
@@ -41,9 +42,11 @@ export function hideResults() { resultsCard.root.hidden = true; }
 export function clearResults() { hideResults(); gameUI.root.classList.remove("over"); }
 
 resultsCard.close.addEventListener("click", hideResults);
-// Enter: the primary action (try again / same course); Escape: just close the card
+// Enter: the card's primary action (try again / same course), or start the run again while playing;
+// Escape: just close the card
 window.addEventListener("keydown", e => {
-  if (resultsCard.root.hidden) return;
-  if (e.code === "Enter") { e.preventDefault(); resultsCard.primary.click(); }
-  if (e.code === "Escape") hideResults();
+  if (e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement) return;   // they handle Enter themselves
+  if (e.code === "Enter" && !resultsCard.root.hidden) { e.preventDefault(); resultsCard.primary.click(); }
+  else if (e.code === "Enter" && !gameUI.root.hidden) { e.preventDefault(); buttons.replay.click(); }
+  if (e.code === "Escape" && !resultsCard.root.hidden) hideResults();
 });

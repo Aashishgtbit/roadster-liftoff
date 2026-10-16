@@ -11,7 +11,7 @@ import { clearFeedback, showToast, updateFeedback } from "./feedback";
 import { applyControls } from "./input";
 import { clearResults } from "./results";
 import { isStuntOver, onStuntHit, onStuntLanding, startStunt, updateStunt } from "./stunt-play";
-import { gameUI, setPanelFuel, setPanelSpeed } from "./ui";
+import { gameUI, resetScoreboard, setPanelFuel, setPanelSpeed } from "./ui";
 
 const TIPS: Record<Scenario, string> = {
   drive: "Bust crates at 45+ km/h · fly over walls, or hit a yellow ramp fast · 3 wall crashes wreck the car",
@@ -41,6 +41,7 @@ export function startPlay(scenario: Scenario, newLayout = false) {
   restartRun(scenario, "player");
   clearFeedback();
   clearResults();
+  resetScoreboard();
   gameUI.tip.textContent = TIPS[scenario];
   gameUI.root.classList.remove("seasoned");
   if (scenario === "drive") startDrive(newLayout, fresh => startPlay("drive", fresh));

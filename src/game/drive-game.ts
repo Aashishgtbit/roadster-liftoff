@@ -10,7 +10,7 @@ import type { BuiltCourse } from "./course";
 import { shakeCamera, showToast } from "./feedback";
 import { loadBest, saveBest } from "./records";
 import { showResults } from "./results";
-import { setStats } from "./ui";
+import { pushPoints, setScoreboard } from "./ui";
 
 const CRASH_SPEED = 9.7;   // m/s (35 km/h)
 const MAX_CRASHES = 3;
@@ -62,7 +62,8 @@ export function onDriveBust(stack: BoxObstacle, speed: number) {
   mesh.visible = false;
   run.busts++;
   shakeCamera(0.25);
-  showToast(`Busted at ${kmh(speed)} km/h · +${POINTS.bust}`);
+  showToast(`Busted at ${kmh(speed)} km/h`);
+  pushPoints("crates busted", POINTS.bust);
   playThump(0.9); playNoiseBurst(0.5, "bandpass", 900, 0.6);
   for (const crate of mesh.children) {   // the stack bursts into its crates
     const piece = new THREE.Mesh(crateGeometry, crateMaterial);
@@ -81,7 +82,8 @@ export function onDriveLanding(flips: number) {
   if (run.over || flips < 1) return;
   if (new THREE.Vector3(0, 1, 0).applyQuaternion(carState.orientation).y < 0.7) return;
   run.flips += flips;
-  showToast(`${flips > 1 ? flips + "× flip" : "Flip"}! +${flips * POINTS.flip}`);
+  showToast(flips > 1 ? `${flips}× flip!` : "Flip!");
+  pushPoints(flips > 1 ? `${flips}× flip` : "flip", flips * POINTS.flip);
   playChime(700);
 }
 
@@ -97,6 +99,7 @@ export function onDriveHit(obstacle: BoxObstacle, speed: number) {
     run.crashes++;
     shakeCamera(0.6);
     carState.fuel = Math.max(0, carState.fuel - 15);
+    pushPoints("wall crash", POINTS.crash);
     playThump(1); playNoiseBurst(0.6, "lowpass", 700, 0.9); playNoiseBurst(0.3, "highpass", 3000, 0.4);
     if (run.crashes >= MAX_CRASHES) endRun(false);
     else showToast(`Crash at ${kmh(speed)} km/h · ${MAX_CRASHES - run.crashes} left`);
@@ -139,6 +142,7 @@ export function updateDrive(dt: number) {
       can.collected = true; can.mesh.visible = false; run.cansCollected++;
       carState.fuel = Math.min(100, carState.fuel + CAN_FUEL);
       showToast(`Fuel +${CAN_FUEL}`); playChime(660);
+      pushPoints("fuel can", POINTS.can);
     }
   }
   for (let i = run.debris.length - 1; i >= 0; i--) {   // busted crates tumble, bounce and vanish
@@ -150,8 +154,8 @@ export function updateDrive(dt: number) {
     if ((d.life -= dt) < 0) { course.remove(m); run.debris.splice(i, 1); }
   }
   if (!run.over && carState.position.x >= FINISH_X) endRun(true);
-  setStats([
-    ["Score", String(score())], ["Time", run.time.toFixed(1) + " s"], ["Best", best.time ? best.time.toFixed(1) + " s" : "—"],
+  setScoreboard(score(), [
+    ["Time", run.time.toFixed(1) + " s"], ["Best", best.time ? best.time.toFixed(1) + " s" : "—"],
     ["To finish", Math.max(0, Math.round(FINISH_X - carState.position.x)) + " m"],
     ["Damage", "●".repeat(run.crashes) + "○".repeat(MAX_CRASHES - run.crashes)],
     ["Course", "#" + (run.course?.seed ?? 0) % 10000],

@@ -13,7 +13,7 @@ import { LINEUP, LINEUP_END_X } from "../stunts/lineup-layout";
 import { shakeCamera, showToast } from "./feedback";
 import { loadBest, saveBest } from "./records";
 import { showResults } from "./results";
-import { setStats } from "./ui";
+import { pushPoints, setScoreboard } from "./ui";
 import type { Stat } from "./ui";
 
 type Stunt = Exclude<Scenario, "drive">;
@@ -22,6 +22,8 @@ const attempt = {
   stunt: "jump" as Stunt,
   over: false,
   peakHeight: 0,
+  rollsCounted: 0,   // full rolls already announced in the points feed
+  cleared: false,    // the car is past the last vehicle
   // ramp
   maxAngle: 0,     // how far round the curve the car got (rad)
   hangTime: 0,     // seconds stopped upside down near the top
@@ -35,6 +37,9 @@ const OBJECTIVES: Record<Stunt, string> = {
   jump: "Jets before the cars · roll with Q / E",
   ramp: "Up the wall · stop at the top · off the end",
 };
+const POINTS = { cleared: 300, roll: 500, landed: 400, facingBack: 200, climb: 400, hangPerSecond: 150 };
+/** The ramp's points so far: how far round the curve, and the hang (up to 3 s). */
+const rampScore = () => Math.round(Math.min(1, attempt.maxAngle / RAMP.endAngle) * POINTS.climb + Math.min(3, attempt.hangTime) * POINTS.hangPerSecond);
 const fullRolls = () => Math.floor((Math.abs(carState.rollAngle) + 0.6) / (2 * Math.PI));
 const rampAngle = () => Math.atan2(carState.position.x - RAMP.startX, -(carState.position.y - RAMP.radius));
 const carUp = () => new THREE.Vector3(0, 1, 0).applyQuaternion(carState.orientation);
@@ -43,7 +48,7 @@ const degrees = (radians: number) => Math.round(radians * 180 / Math.PI) + "°";
 export const isStuntOver = () => attempt.over;
 
 export function startStunt(stunt: Stunt, retry: () => void, watch: () => void) {
-  Object.assign(attempt, { stunt, over: false, peakHeight: 0, maxAngle: 0, hangTime: 0, offTheWall: false });
+  Object.assign(attempt, { stunt, over: false, peakHeight: 0, rollsCounted: 0, cleared: false, maxAngle: 0, hangTime: 0, offTheWall: false });
   best = loadBest(stunt);
   onRetry = retry; onWatch = watch;
   showToast(OBJECTIVES[stunt], 3.2);
@@ -87,17 +92,19 @@ function succeed(verticalSpeed: number) {
   const stats: Stat[] = [];
   if (attempt.stunt === "jump") {
     const rolls = fullRolls();
-    score = 300 + rolls * 500 + landingPoints;
+    score = POINTS.cleared + rolls * POINTS.roll + landingPoints;
     title = rolls ? `Cleared with ${rolls === 1 ? "a roll" : rolls + " rolls"}` : "Cleared the lineup";
     stats.push(["Rolls", String(rolls)], ["Peak", attempt.peakHeight.toFixed(1) + " m"]);
   } else {
     const facingBack = new THREE.Vector3(1, 0, 0).applyQuaternion(carState.orientation).x < -0.5;
-    const climb = Math.min(1, attempt.maxAngle / RAMP.endAngle);
-    score = Math.round(climb * 400 + Math.min(3, attempt.hangTime) * 150 + 400 + (facingBack ? 200 : 0) + landingPoints);
+    score = rampScore() + POINTS.landed + (facingBack ? POINTS.facingBack : 0) + landingPoints;
+    pushPoints("on its wheels", POINTS.landed);
+    if (facingBack) pushPoints("facing back", POINTS.facingBack);
     title = facingBack ? "Flipped and landed" : "Landed";
     stats.push(["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Facing", facingBack ? "back ✓" : "away"]);
   }
   stats.push(["Landing", `${rating} · ${Math.abs(verticalSpeed).toFixed(1)} m/s`]);
+  if (landingPoints) pushPoints(`${rating.toLowerCase()} landing`, landingPoints);
   finish(title, score, stats);
   playChime(520); setTimeout(() => playChime(780), 140);
 }
@@ -123,7 +130,7 @@ function finish(title: string, score: number, stats: Stat[], note?: string) {
 }
 
 export function updateStunt(dt: number) {
-  const height = carState.position.y - COM_HEIGHT;
+  const height = Math.max(0, carState.position.y - COM_HEIGHT);
   attempt.peakHeight = Math.max(attempt.peakHeight, height);
   if (attempt.stunt === "ramp" && !attempt.over) {
     const onWall = carState.phase === "Climb" || carState.phase === "Hang";
@@ -132,11 +139,16 @@ export function updateStunt(dt: number) {
     // in the air after climbing past vertical: off the end (or fallen off), the landing decides
     if (carState.wheelsOnGround === 0 && attempt.maxAngle > Math.PI / 2 && carState.airTime > 0.2) attempt.offTheWall = true;
   }
+  if (attempt.over) return;
   const bestText = best.score ? String(best.score) : "—";
   if (attempt.stunt === "jump") {
-    const cleared = Math.max(0, Math.min(LINEUP.length, LINEUP.filter(v => carState.position.x > v.x + v.width / 2).length));
-    setStats([["Rolls", String(fullRolls())], ["Height", height.toFixed(1) + " m"], ["Best", bestText], ["Cars cleared", `${cleared} / ${LINEUP.length}`]]);
+    const cleared = LINEUP.filter(v => carState.position.x > v.x + v.width / 2).length, rolls = fullRolls();
+    // announce points as they are earned (they count once the car lands on its wheels)
+    if (rolls > attempt.rollsCounted) { pushPoints(rolls > 1 ? `roll ${rolls}` : "roll", (rolls - attempt.rollsCounted) * POINTS.roll); attempt.rollsCounted = rolls; }
+    if (!attempt.cleared && carState.position.x > LINEUP_END_X) { attempt.cleared = true; pushPoints("lineup cleared", POINTS.cleared); }
+    const live = (attempt.cleared ? POINTS.cleared : 0) + rolls * POINTS.roll;
+    setScoreboard(live, [["Rolls", String(rolls)], ["Cars cleared", `${cleared} / ${LINEUP.length}`], ["Height", height.toFixed(1) + " m"], ["Best", bestText]]);
   } else {
-    setStats([["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Best", bestText], ["Height", height.toFixed(1) + " m"]]);
+    setScoreboard(rampScore(), [["Climb", degrees(attempt.maxAngle)], ["Hang", attempt.hangTime.toFixed(1) + " s"], ["Height", height.toFixed(1) + " m"], ["Best", bestText]]);
   }
 }

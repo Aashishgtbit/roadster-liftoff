@@ -1,31 +1,48 @@
 /* Playing: the panel (speedometer, fuel, stats), toasts, controls help as keycaps, touch buttons, results card. */
 .game { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 
-.g-panel { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: 116px auto; gap: 14px; align-items: center;
-  padding: 8px 16px 8px 10px; background: rgba(9,13,24,.6); border: 1px solid var(--rule); border-radius: 14px;
+/* top centre: speedometer and fuel */
+.g-panel { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; align-items: center;
+  padding: 6px 16px 6px 8px; background: rgba(9,13,24,.6); border: 1px solid var(--rule); border-radius: 14px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.g-side { display: grid; gap: 8px; min-width: 250px; }
-.g-fuel .gauge { width: 210px; }
-.g-stats { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 18px; font-family: var(--mono); font-size: 12px; }
-.g-stats > span { display: grid; gap: 0; }
-.g-stats .label { font-size: 9.5px; }
+.g-speedo { width: 112px; }
+.g-fuel .gauge { width: 200px; }
+
+/* right: the scoreboard, with points popping in as they are earned */
+.g-score { position: absolute; right: var(--gutter); top: 50%; transform: translateY(-50%); width: 210px; display: grid; gap: 6px; padding: 14px 16px;
+  background: rgba(9,13,24,.55); border: 1px solid var(--rule); border-radius: 16px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.g-score-value { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: .95; font-variant-numeric: tabular-nums; color: var(--fg); }
+.g-score-value.bump { animation: g-bump .35s ease-out; }
+@keyframes g-bump { 40% { transform: scale(1.12); color: var(--amber); } }
+.g-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; min-height: 20px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.g-feed li { animation: g-feed-in .25s ease-out; transition: opacity .8s; }
+.g-feed li.old { opacity: 0; }
+.g-feed li b { font-weight: 600; color: var(--amber); }
+.g-feed li.minus b { color: var(--red-soft); }
+@keyframes g-feed-in { from { opacity: 0; transform: translateX(10px); } }
+.g-stats { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; }
+.g-stats > span { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.g-stats .label { font-size: 10px; }
 .g-stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
 
 .g-toast { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3.4vw, 34px);
   text-transform: uppercase; color: var(--fg); text-shadow: 0 2px 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .25s; white-space: nowrap; }
 .g-toast.show { opacity: 1; }
 
-/* controls help: keycaps that light up while held */
-.g-help { position: absolute; left: var(--gutter); bottom: 14px; display: grid; gap: 8px; padding: 10px 12px; background: rgba(9,13,24,.6); border: 1px solid var(--rule);
-  border-radius: 12px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: opacity .6s; max-width: 340px; }
-.game.seasoned .g-help { opacity: .25; }
+/* bottom: the control dock, every control as a keycap, lit while held */
+.g-help { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; padding: 8px 14px 8px;
+  background: rgba(9,13,24,.55); border: 1px solid var(--rule); border-radius: 16px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: opacity .6s; max-width: calc(100% - 2 * var(--gutter)); }
+.game.seasoned .g-help { opacity: .45; }
 .g-help:hover { opacity: 1; }
-.keys { display: grid; gap: 5px; }
+.keys { display: flex; gap: 18px; align-items: flex-end; }
+.key-group { display: grid; gap: 4px; justify-items: start; }
+.key-group + .key-group { padding-left: 18px; border-left: 1px solid var(--rule); }
+.key-group .label { font-size: 9.5px; }
 .key-row { display: flex; gap: 5px; }
-.key-row:nth-child(2) { padding-left: 14px; }
-.key { width: 52px; height: 50px; display: grid; justify-items: center; align-content: center; gap: 1px; border: 1px solid var(--rule); border-bottom-width: 3px;
-  border-radius: 8px; background: linear-gradient(180deg, #1a2238, #121a2e); color: var(--fg); transition: transform .06s, background .06s, border-color .06s; }
-.key.wide { width: 109px; }
+.key { width: 50px; height: 50px; display: grid; justify-items: center; align-content: center; gap: 1px; border: 1px solid var(--rule); border-bottom-width: 3px;
+  border-radius: 9px; background: linear-gradient(180deg, #1a2238, #121a2e); color: var(--fg); transition: transform .06s, background .06s, border-color .06s; }
+.key.wide { width: 74px; }
 .key .icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .key b { font-family: var(--mono); font-size: 9px; font-weight: 500; color: var(--muted); line-height: 1; }
 .key small { font-family: var(--mono); font-size: 8px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); line-height: 1.2; white-space: nowrap; }
@@ -33,7 +50,7 @@
 .key.down b, .key.down small { color: var(--gas); }
 .key[data-action="gas"] .icon { color: var(--red-soft); }
 .key[data-action="jet"] .icon { color: var(--gas); }
-.g-tip { margin: 0; font-family: var(--mono); font-size: 10.5px; line-height: 1.6; color: var(--muted); order: 2; }
+.g-tip { margin: 0; font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: var(--muted); order: 2; text-align: center; }
 
 /* touch: icon buttons */
 .g-touch { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 14px; display: none; justify-content: space-between; gap: 10px; pointer-events: auto; }
@@ -76,12 +93,27 @@
 .g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
 .stage.playing .stage-note { display: none; }
-.stage.playing .stage-ctl { bottom: 16px; }
+/* while playing, the stage buttons move to the top right as icons, leaving the bottom to the control dock */
+.stage.playing .stage-ctl { top: 14px; bottom: auto; }
+.stage.playing .stage-ctl .btn.icon span { display: none; }
+.stage.playing .stage-ctl .btn.icon { padding: 9px; }
+@media (max-width: 1240px) { .key-group:last-child { display: none; } }
+@media (max-width: 900px) {
+  .g-help { display: none; }
+  .stage.playing .hud { display: none; }
+  .stage.playing .stage-ctl { top: auto; bottom: 16px; }
+  .g-score { top: auto; bottom: 16px; left: var(--gutter); right: auto; transform: none; width: auto; padding: 8px 12px; grid-template-columns: auto auto; align-items: center; gap: 2px 12px; }
+  .g-score > .label { grid-column: 1 / -1; }
+  .g-score-value { font-size: 34px; }
+  .g-stats { display: none; }
+  .g-feed { min-height: 0; }
+}
 @media (max-width: 640px) {
-  .g-panel { top: 10px; width: calc(100% - 2 * var(--gutter)); grid-template-columns: 88px 1fr; gap: 10px; padding: 6px 10px 6px 6px; }
-  .g-side { min-width: 0; }
-  .g-fuel .gauge { width: 100%; max-width: 210px; }
-  .g-stats { grid-template-columns: repeat(2, auto); }
+  .g-panel { top: 10px; padding: 4px 10px 4px 4px; gap: 8px; }
+  .g-speedo { width: 84px; }
+  .g-fuel .gauge { width: 150px; }
+  .g-score { top: 116px; bottom: auto; left: auto; right: var(--gutter); }
+  .g-feed { display: none; }
   .g-toast { top: 196px; font-size: 22px; }
 }
 /* after a run the controls are locked: the help and touch buttons step aside */

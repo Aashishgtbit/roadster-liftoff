@@ -25,7 +25,7 @@ export const ACTIONS: Record<Action, ActionInfo> = {
   right: { keys: ["KeyD", "ArrowRight"], cap: "D", caption: "steer", icon: "M9 18l6-6-6-6" },
   rollLeft: { keys: ["KeyQ"], cap: "Q", caption: "roll", icon: "M5 13a7 7 0 1 0 2.5-6.4M5 3.5V8h4.5" },
   rollRight: { keys: ["KeyE"], cap: "E", caption: "roll", icon: "M19 13a7 7 0 1 1-2.5-6.4M19 3.5V8h-4.5" },
-  jet: { keys: ["Space"], cap: "Space", caption: "jets · fly", icon: "M5 7h14M8 11l-1.5 8M12 11v9M16 11l1.5 8", wide: true },
+  jet: { keys: ["Space"], cap: "Space", caption: "jets", icon: "M5 7h14M8 11l-1.5 8M12 11v9M16 11l1.5 8", wide: true },
   boost: { keys: ["ShiftLeft", "ShiftRight"], cap: "Shift", caption: "boost", icon: "M4 6l6 6-6 6M12 6l6 6-6 6", wide: true },
   reset: { keys: ["KeyR"], cap: "R", caption: "reset", icon: "M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" },
 };
@@ -55,28 +55,53 @@ function release(action: Action) {
   showHeld(action, false);
 }
 
-// ---------- the help graphic: keycaps laid out as on a keyboard ----------
+// ---------- the control dock: every control as a keycap, grouped, lit while held ----------
+/** App shortcuts shown in the dock; src/ui/controls.ts handles them and lights them up. */
+export const SHORTCUTS = [
+  { code: "KeyP", cap: "P", caption: "pause", icon: "M8 5v14M16 5v14" },
+  { code: "KeyC", cap: "C", caption: "camera", icon: "M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12zM12 9.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2" },
+  { code: "KeyM", cap: "M", caption: "sound", icon: "M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7" },
+  { code: "KeyF", cap: "F", caption: "full screen", icon: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5", wide: true },
+  { code: "Enter", cap: "Enter", caption: "retry", icon: "M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4", wide: true },
+] as const;
+
+function keycap(cap: string, caption: string, icon: string, wide = false) {
+  const key = document.createElement("span");
+  key.className = "key" + (wide ? " wide" : "");
+  const label = document.createElement("b"); label.textContent = cap;
+  const text = document.createElement("small"); text.textContent = caption;
+  key.append(iconSvg(icon), label, text);
+  return key;
+}
 {
-  const layout: (Action | null)[][] = [["rollLeft", "gas", "rollRight", "reset"], ["left", "brake", "right"], ["boost", "jet"]];
-  const keyboard = document.createElement("div");
-  keyboard.className = "keys";
-  for (const row of layout) {
-    const line = document.createElement("div");
-    line.className = "key-row";
-    for (const action of row) {
-      if (!action) continue;
-      const info = ACTIONS[action], key = document.createElement("span");
-      key.className = "key" + (info.wide ? " wide" : "");
-      key.dataset.action = action;
-      key.title = `${info.keys.map(k => k.replace(/^Key|Left$|Right$/g, "")).join(" / ")}: ${info.caption}`;
-      const cap = document.createElement("b"); cap.textContent = info.cap;
-      const caption = document.createElement("small"); caption.textContent = info.caption;
-      key.append(iconSvg(info.icon), cap, caption);
-      line.append(key);
+  const groups: [string, (Action | (typeof SHORTCUTS)[number])[]][] = [
+    ["Drive", ["gas", "brake", "left", "right", "boost"]],
+    ["Fly", ["jet", "rollLeft", "rollRight", "brake"]],
+    ["Game", ["reset", ...SHORTCUTS]],
+  ];
+  const dock = document.createElement("div");
+  dock.className = "keys";
+  for (const [title, items] of groups) {
+    const group = document.createElement("div"), heading = document.createElement("span"), row = document.createElement("div");
+    group.className = "key-group"; heading.className = "label"; heading.textContent = title; row.className = "key-row";
+    for (const item of items) {
+      let key: HTMLSpanElement;
+      if (typeof item === "string") {
+        const info = ACTIONS[item];
+        // in the air the brake key lands the car softly
+        key = keycap(info.cap, title === "Fly" && item === "brake" ? "land" : info.caption, info.icon, info.wide);
+        key.dataset.action = item;
+        key.title = `${info.keys.map(k => k.replace(/^Key|Left$|Right$/g, "")).join(" / ")}: ${info.caption}`;
+      } else {
+        key = keycap(item.cap, item.caption, item.icon, "wide" in item && item.wide);
+        key.dataset.shortcut = item.code;
+      }
+      row.append(key);
     }
-    keyboard.append(line);
+    group.append(heading, row);
+    dock.append(group);
   }
-  gameUI.help.prepend(keyboard);
+  gameUI.help.prepend(dock);
 }
 
 // ---------- touch buttons ----------

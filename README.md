@@ -88,7 +88,9 @@ test/                        Vitest: physics.test.ts, layout.test.ts
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to add a stunt or an obstacle.
 
-Driving and flying (Drive it and the played stunts; the keys light up on screen while held):
+Driving and flying (Drive it and the played stunts). While you play, every control is shown along the bottom as a
+keycap that lights up while held, and the live score, a feed of points as you earn them, and the run's stats sit on
+the right:
 
 | Key | Touch | Does |
 | --- | --- | --- |
@@ -99,6 +101,8 @@ Driving and flying (Drive it and the played stunts; the keys light up on screen 
 | `Space` | jets | Floor jets: climb to a hover and hold it |
 | `Shift` | boost | Rear jets |
 | `R` | | Put the car back on its wheels (it also rights itself if stuck upside down) |
+| `P` · `C` · `M` · `F` | | Pause · free-look camera · sound · full screen (also while watching) |
+| `Enter` | | Start the run again (on the results card: try again) · `Esc` closes the card |
 
 Controls in the 3D view:
 

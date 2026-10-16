@@ -24,6 +24,7 @@ body { overflow: hidden; }
 .app.expanded .btn.icon.fs-float { display: inline-flex; }
 @media (max-width: 900px) { .bar .tab small { display: none; } .stage-ctl .btn.icon span { display: none; } .stage-ctl .btn.icon { padding: 9px; } }
 @media (max-width: 1100px) { .brand .label { display: none; } }
+@media (max-width: 1000px) { .bar-actions .btn.icon span { display: none; } .bar-actions .btn.icon { padding: 9px; } }
 @media (max-width: 640px) {
   .bar { gap: 8px; padding-block: 8px; flex-wrap: wrap; }
   .brand { flex: 1 0 auto; }

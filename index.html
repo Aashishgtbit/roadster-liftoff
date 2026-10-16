@@ -29,11 +29,14 @@
   <div class="game" id="gameUI" hidden>
     <div class="g-panel">
       <div class="g-speedo" id="gameSpeedo"></div>
-      <div class="g-side">
-        <div class="g-fuel" id="gameFuel"></div>
-        <div class="g-stats" id="gameStats"></div>
-      </div>
+      <div class="g-fuel" id="gameFuel"></div>
     </div>
+    <aside class="g-score" aria-live="polite">
+      <span class="label">Score</span>
+      <b class="g-score-value" id="gameScore">0</b>
+      <ol class="g-feed" id="gameFeed"></ol>
+      <div class="g-stats" id="gameStats"></div>
+    </aside>
     <div class="g-toast" id="gameToast"></div>
     <div class="g-help" id="gameHelp"><p class="g-tip" id="gameTip"></p></div>
     <div class="g-touch" id="gameTouch" aria-hidden="true"></div>

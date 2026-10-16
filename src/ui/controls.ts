@@ -47,7 +47,16 @@ async function toggleFullScreen() {
 buttons.fullScreen.addEventListener("click", toggleFullScreen);
 buttons.exitFullScreen.addEventListener("click", toggleFullScreen);
 document.addEventListener("fullscreenchange", syncFullScreen);
+/** Light a shortcut's keycap in the control dock for a moment. */
+function flashShortcut(code: string) {
+  for (const key of document.querySelectorAll(`[data-shortcut="${code}"]`)) { key.classList.add("down"); setTimeout(() => key.classList.remove("down"), 160); }
+}
 window.addEventListener("keydown", e => {
-  if (e.code === "KeyF" && !e.metaKey && !e.ctrlKey) void toggleFullScreen();
+  if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if (["KeyP", "KeyC", "KeyM", "KeyF", "Enter"].includes(e.code)) flashShortcut(e.code);
+  if (e.code === "KeyP") buttons.pause.click();
+  if (e.code === "KeyC") buttons.freeLook.click();
+  if (e.code === "KeyM") buttons.sound.click();
+  if (e.code === "KeyF") void toggleFullScreen();
   if (e.code === "Escape" && appRoot.classList.contains("expanded")) { appRoot.classList.remove("expanded"); syncFullScreen(); }
 });
