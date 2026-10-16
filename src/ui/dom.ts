@@ -22,6 +22,7 @@ export const buttons = {
   pause: byId<HTMLButtonElement>("pauseBtn"),
   replay: byId<HTMLButtonElement>("replayBtn"),
   freeLook: byId<HTMLButtonElement>("camBtn"),
+  view: byId<HTMLButtonElement>("viewBtn"),
   wing: byId<HTMLButtonElement>("wingBtn"),
   fullScreen: byId<HTMLButtonElement>("fsBtn"),
   exitFullScreen: byId<HTMLButtonElement>("fsFloat"),

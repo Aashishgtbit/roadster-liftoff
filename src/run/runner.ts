@@ -31,6 +31,7 @@ export function setStunt(scenario: Scenario, pilot: Pilot = scenario === "drive"
   stage.classList.toggle("playing", playing);
   stage.dataset.scenario = scenario;
   buttons.play.hidden = scenario === "drive";
+  buttons.view.hidden = !playing;
   setLabel(buttons.play, playing ? "Watch demo" : "Play it");
   if (playing) { startPlay(scenario); play(); canvas.focus({ preventScroll: true }); }
   else restartRun(scenario, "auto");

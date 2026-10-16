@@ -14,18 +14,47 @@ const position = new THREE.Vector3(), lookAt = new THREE.Vector3();             
 const wantPosition = new THREE.Vector3(), wantLookAt = new THREE.Vector3();     // where the current shot wants it
 const heading = new THREE.Vector3(), shake = new THREE.Vector3();
 
+/** How the camera follows the car while playing: auto picks per moment (side-on at the ramp, chase otherwise). */
+export type PlayView = "auto" | "chase" | "side";
+const VIEWS: PlayView[] = ["auto", "chase", "side"];
+const VIEW_NAMES: Record<PlayView, string> = { auto: "Auto", chase: "Chase", side: "Side" };
+let playView: PlayView = (() => { try { const v = localStorage.getItem("roadster-view"); return VIEWS.includes(v as PlayView) ? v as PlayView : "auto"; } catch { return "auto"; } })();
+export const playViewName = () => VIEW_NAMES[playView];
+
+/** Next view: Auto → Chase → Side. Remembered in this browser. */
+export function cycleView() {
+  playView = VIEWS[(VIEWS.indexOf(playView) + 1) % VIEWS.length];
+  try { localStorage.setItem("roadster-view", playView); } catch { /* private window: for this visit only */ }
+  setLabel(buttons.view, "View: " + VIEW_NAMES[playView]);
+  if (app.freeLook) setFreeLook(false);
+  app.needsRender = true;
+}
+
+/** How far out the side camera stands: between the barrier and the stands on the course, wider for the stunts. */
+const SIDE_DISTANCE: Record<string, number> = { drive: 15, jump: 22, ramp: 30 };
+
+/** Side on, leading the car: camera and aim move ahead the way it is going (up the wall, toward the lip, down to the
+ * landing, along the course), so what is next is in view in time to decide what to do. */
+function sideShot(x: number, y: number, z: number) {
+  // the lead grows with speed but stays within the frame: the car sits about a third of the way in, the way ahead
+  // fills the rest
+  const distance = SIDE_DISTANCE[carState.scenario], onCourse = carState.scenario === "drive", maxLead = distance * (carState.scenario === "ramp" ? 0.33 : 0.22);
+  const v = carState.velocity, leadX = clamp(v.x * 0.9, -maxLead, maxLead), leadY = clamp(v.y * 0.5, -5, 1.5);
+  if (onCourse) {   // low and level, just above the barrier, so the car sits mid-frame with the course ahead of it
+    wantPosition.set(x + 1 + leadX * 0.35, Math.max(2.4, y + 1.9 + leadY * 0.4), z + distance);
+    wantLookAt.set(x + 1 + leadX, Math.max(1, y + 0.45 + leadY), z);
+    return;
+  }
+  wantPosition.set(x + 1 + leadX * 0.35, Math.max(3, y * 0.75 + 2.5 + leadY * 0.4), distance);
+  wantLookAt.set(x + 1 + leadX, Math.max(1.5, y * 0.8 + 1 + leadY), 0);
+}
+
 /** Pick the shot for the current moment. The car can drift sideways; every shot follows it. */
 function chooseShot() {
   const { x, y, z } = car.position;
   const player = carState.pilot === "player";
-  if (player && carState.scenario === "ramp" && x > RAMP.startX - 9) {
-    // playing the ramp: side on, leading the car. Camera and aim move ahead the way it is going, so the wall above,
-    // the lip, or the ground it is about to land on is in view in time to decide what to do
-    const v = carState.velocity, leadX = clamp(v.x * 0.9, -10, 10), leadY = clamp(v.y * 0.5, -5, 1.5);
-    wantPosition.set(x + 1.5 + leadX * 0.6, Math.max(3, y * 0.75 + 2.5 + leadY * 0.4), 30);
-    wantLookAt.set(x + 1 + leadX, Math.max(1.5, y * 0.8 + 1 + leadY), 0);
-    return;
-  }
+  const autoSide = playView === "auto" && carState.scenario === "ramp" && x > RAMP.startX - 9;
+  if (player && (playView === "side" || autoSide)) { sideShot(x, y, z); return; }
   if (player) {
     // chase camera: behind the car along its direction of travel (its nose when slow), looking down the path ahead.
     // The faster it goes, the further ahead it aims and the wider the lens (see updateCamera), so walls and stacks
@@ -60,6 +89,8 @@ function chooseShot() {
     }
   }
 }
+
+setLabel(buttons.view, "View: " + VIEW_NAMES[playView]);
 
 const controls = new OrbitControls(camera, canvas);
 controls.enabled = false;

@@ -59,7 +59,8 @@ function release(action: Action) {
 /** App shortcuts shown in the dock; src/ui/controls.ts handles them and lights them up. */
 export const SHORTCUTS = [
   { code: "KeyP", cap: "P", caption: "pause", icon: "M8 5v14M16 5v14" },
-  { code: "KeyC", cap: "C", caption: "camera", icon: "M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12zM12 9.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2" },
+  { code: "KeyV", cap: "V", caption: "view", icon: "M3 8h4l2-3h6l2 3h4v11H3zM12 10.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7" },
+  { code: "KeyC", cap: "C", caption: "free look", icon: "M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12zM12 9.4a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2" },
   { code: "KeyM", cap: "M", caption: "sound", icon: "M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7" },
   { code: "KeyF", cap: "F", caption: "full screen", icon: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5", wide: true },
   { code: "Enter", cap: "Enter", caption: "retry", icon: "M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4", wide: true },

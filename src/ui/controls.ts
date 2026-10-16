@@ -6,7 +6,7 @@ import type { Scenario, WingMode } from "../physics/types";
 import { isPlaying } from "../game/modes";
 import { replay, setStunt } from "../run/runner";
 import { carState } from "../run/sim";
-import { setFreeLook } from "../camera/camera";
+import { cycleView, setFreeLook } from "../camera/camera";
 import { isSoundOn, setSound } from "../audio/sound";
 import { byId } from "./dom";
 
@@ -14,6 +14,7 @@ buttons.pause.addEventListener("click", () => { app.playing = !app.playing; setL
 buttons.replay.addEventListener("click", () => { replay(); canvas.focus({ preventScroll: true }); });
 buttons.play.addEventListener("click", () => setStunt(carState.scenario, isPlaying() ? "auto" : "player"));
 buttons.freeLook.addEventListener("click", () => setFreeLook(!app.freeLook));
+buttons.view.addEventListener("click", cycleView);
 buttons.sound.addEventListener("click", () => setSound(!isSoundOn()));
 for (const tab of stuntTabs) tab.addEventListener("click", () => setStunt(tab.dataset.stunt as Scenario));
 
@@ -53,7 +54,8 @@ function flashShortcut(code: string) {
 }
 window.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-  if (["KeyP", "KeyC", "KeyM", "KeyF", "Enter"].includes(e.code)) flashShortcut(e.code);
+  if (["KeyP", "KeyC", "KeyV", "KeyM", "KeyF", "Enter"].includes(e.code)) flashShortcut(e.code);
+  if (e.code === "KeyV" && !buttons.view.hidden) cycleView();
   if (e.code === "KeyP") buttons.pause.click();
   if (e.code === "KeyC") buttons.freeLook.click();
   if (e.code === "KeyM") buttons.sound.click();

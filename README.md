@@ -104,6 +104,7 @@ the right:
 | `Space` | jets | Floor jets: climb to a hover and hold it |
 | `Shift` | boost | Rear jets |
 | `R` | | Put the car back on its wheels (it also rights itself if stuck upside down) |
+| `V` | | Camera view while playing: Auto (side-on at the ramp, chase elsewhere) → Chase → Side (remembered) |
 | `P` · `C` · `M` · `F` | | Pause · free-look camera · sound · full screen (also while watching) |
 | `Enter` | | Start the run again (on the results card: try again) · `Esc` closes the card |
 
@@ -115,6 +116,7 @@ Controls in the 3D view:
 | **Sound** | Turn the live sound on or off (browsers only allow audio after a click) |
 | **Wing** | Cycle Tesla's Track Mode aero: Road (stowed), High-Downforce, Low-Drag |
 | **Play it / Watch demo** | Fly the stunt yourself, or watch the flight computer do it |
+| **View** | While playing: Auto, Chase or Side camera |
 | **Free look** | Drag to orbit the car; click again to return to the cinematic camera |
 | **Pause / Replay** | Pause the run or restart it |
 
