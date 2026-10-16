@@ -23,7 +23,7 @@ down on its jets, settles at the foot of the ramp and drives away.
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
 **Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one), boxed in by
-concrete barriers you can scrape along, with grandstands beyond:
+concrete barriers and catch fences you can scrape along (but not fly over), with grandstands beyond:
 
 - **Crate stacks**: bust through at 45 km/h or more, or fly over.
 - **Striped walls**: fly over them on the jets, or hit a **yellow kicker ramp** fast and launch over with no fuel.
@@ -38,13 +38,15 @@ Score is distance plus 100 per crate stack, 25 per canister, minus 200 per crash
 
 ## Run it
 
-Built with [Vite](https://vite.dev) and [three.js](https://threejs.org). You need Node 18 or newer.
+Written in [TypeScript](https://www.typescriptlang.org) (strict), built with [Vite](https://vite.dev) and
+[three.js](https://threejs.org), tested with [Vitest](https://vitest.dev). You need Node 20 or newer.
 
 ```bash
 npm install
 npm run dev        # local dev server with hot reload
-npm test           # headless physics checks for every stunt and the game
-npm run build      # static site in dist/
+npm test           # headless checks: every stunt, the game physics, and the course layouts
+npm run typecheck  # TypeScript, strict
+npm run build      # typecheck, then the static site in dist/
 npm run preview    # serve the built site
 ```
 
@@ -55,20 +57,25 @@ timeline, what is still unproven, how the simulation works, and sources).
 ## Project layout
 
 ```
-index.html, about.html     page markup; each loads one entry module
+index.html, about.html       page markup; each loads one entry module
 src/
-  main.js                  app entry: styles, module start-up order, first frame, render loop
-  config.js                shared constants: car dimensions, ramp geometry
-  physics/roadster-sim.js  the simulation (pure, no DOM; the tests import it directly)
-  car/                     the Roadster model: geometry, materials, assembly
-  scene/                   sky, ground, markings, floodlights
-  stunts/                  the lineup and the ramp
-  game/                    Drive it: course generation and game rules
-  run/runner.js            steps the physics and applies it to the scene and HUD
+  main.ts                    app entry: styles, scene modules, first frame, render loop
+  config.ts                  shared constants: car dimensions, ramp shape, course size and boundaries
+  physics/                   the simulation: pure, no DOM (the tests run it directly)
+    simulation.ts              forces, collisions and integration at 240 Hz
+    flight-computer.ts         how each stunt and the player's controls fire the nozzles
+    contacts.ts                wheel rays against the ground, boxes, kicker ramps and the curved wall
+    constants.ts               mass, suspension, tyres, aero, stunt and game tuning
+    types.ts                   SimState, Obstacle, Nozzle, Phase…
+  car/                       the Roadster model: geometry, materials, nozzle layout, assembly
+  scene/                     sky, ground, markings, floodlights
+  stunts/                    the lineup and the ramp
+  game/                      Drive it: layout (pure), course (3D), game rules, records, UI handles
+  run/                       the app's simulation instance, and the runner that applies it to the scene
   camera/, audio/, effects/, core/, ui/
-  styles/                  tokens, buttons, stage, game, app, story
-  story/                   the story page's script
-test/physics.test.mjs      headless checks
+  styles/                    tokens, buttons, stage, game, app, story
+  story/                     the story page's script
+test/                        Vitest: physics.test.ts, layout.test.ts
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to add a stunt or an obstacle.
@@ -120,10 +127,11 @@ scaled by the touchdown speed. Volume and stereo pan follow the camera.
 
 ## Tests
 
-`npm test` imports `src/physics/roadster-sim.js` directly and runs every stunt and the game physics headlessly,
-checking the outcomes: lineup clearance, apex, a full roll, landing speeds, drift, hang height, the ramp stunt's
-x-axis flip and landing heading, crate busting, flying over walls, kicker-ramp launches and that a fast wall hit
-cannot tunnel through.
+`npm test` runs the real physics module with the car's real nozzle layout, headlessly, and checks every outcome:
+lineup clearance, apex, a full roll, landing speeds, drift, hang height, the ramp stunt's x-axis flip and landing
+heading, crate busting, flying over walls, kicker-ramp launches, that a fast wall hit cannot tunnel through, and
+that the barriers and catch fences keep the car on the track. It also checks that every random course layout is
+fair: nothing outside the track, never a ramp into a wall first, and room to land between obstacles.
 
 ## Publish with GitHub Pages
 
