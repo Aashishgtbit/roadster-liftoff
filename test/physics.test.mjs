@@ -1,21 +1,17 @@
-// Runs both stunts headlessly with the exact physics code shipped in index.html and checks the outcomes.
+// Runs every stunt and the game physics headlessly with the real physics module and checks the outcomes.
 //   npm install && npm test
 import * as THREE from "three";
-import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
+import { makeRoadsterSim } from "../src/physics/roadster-sim.js";
+import { WR, COM, XW, TRACK_Z, RAMP } from "../src/config.js";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
-const start = html.indexOf("/* ---------- physics: a rigid body"), end = html.indexOf("/* ---------- the lineup from the demo");
-assert.ok(start > 0 && end > start, "physics block not found in index.html");
-const makeRoadsterSim = new Function("THREE", html.slice(start, end) + "\nreturn makeRoadsterSim;")(THREE);
-
-const V = THREE.Vector3, COM = 0.55, nozzles = [];
+// the same nozzle layout the car model builds (src/car/roadster.js); the nose pair sits at about x = 2.2
+const V = THREE.Vector3, nozzles = [];
 for (const x of [-1.6, 1.6]) for (const z of [-0.55, 0.55]) nozzles.push({ p: new V(x, 0.14 - COM, z), e: new V(0, -1, 0), group: "down", Tmax: 18000 });
 for (const z of [-0.375, -0.135, 0.135, 0.375]) nozzles.push({ p: new V(-2.30, 0.52 - COM, z), e: new V(-1, 0, 0), group: "rear", Tmax: 7000 });
 for (const z of [-0.3, 0.3]) nozzles.push({ p: new V(2.2, 0.30 - COM, z), e: new V(1, 0, 0), group: "front", Tmax: 5000 });
-const RAMP = { cx: 4, R: 7.2, thMax: 0.9 * Math.PI, hw: 2.4, land: 1.4 };
 const events = [];
-const sim = makeRoadsterSim(THREE, { WR: 0.36, COM, XW: [-1.49, 1.42], TRACK_Z: 0.84, X_TAKE: -10, nozzles, ramp: RAMP,
+const sim = makeRoadsterSim(THREE, { WR, COM, XW, TRACK_Z, X_TAKE: -10, nozzles, ramp: RAMP,
   onBust: (b) => events.push("bust " + b.id), onHit: (b, v) => events.push(`hit ${b.id} ${v.toFixed(1)}`) });
 const st = sim.st;
 

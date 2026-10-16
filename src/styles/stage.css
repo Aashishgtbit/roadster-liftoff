@@ -1,0 +1,21 @@
+/* The 3D stage: canvas, loading message, stunt tabs, HUD, scene controls. */
+/* stage */
+.stage { position: relative; width: 100%; height: clamp(380px, 56vw, 680px); border-block: 1px solid var(--rule); background: var(--night-2); overflow: hidden; }
+#scene { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+#scene.free { cursor: grab; touch-action: none; }
+.stage-msg { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--muted); pointer-events: none; text-align: center; padding-inline: 24px; }
+.stunts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding-block: 0 16px; }
+.stunts .label { margin-right: 4px; }
+.tab { font-family: var(--body); font-size: 15px; font-weight: 600; color: var(--fg); background: var(--night-2); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 14px; cursor: pointer; display: grid; text-align: left; gap: 1px; }
+.tab small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.tab:hover { border-color: var(--muted); }
+.tab[aria-selected="true"] { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+.tab:focus-visible { outline: 2px solid var(--gas); outline-offset: 3px; }
+
+@media (max-width: 560px) { .stage-ctl { top: auto; bottom: 34px; left: var(--gutter); right: var(--gutter); flex-wrap: wrap; } .stage-note { left: var(--gutter); } }
+.hud { position: absolute; top: 14px; left: var(--gutter); display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 10px 12px; background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; backdrop-filter: blur(4px); font-variant-numeric: tabular-nums; }
+.hud dt { color: var(--muted); text-transform: uppercase; }
+.hud dd { margin: 0; color: var(--fg); min-width: 13ch; }
+.hud dd.on { color: var(--gas); }
+.stage-ctl { position: absolute; top: 14px; right: var(--gutter); display: flex; gap: 8px; }
+.stage-note { position: absolute; bottom: 10px; right: var(--gutter); font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .06em; }

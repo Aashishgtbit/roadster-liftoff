@@ -1,0 +1,38 @@
+/* Drive it: game panel, toasts, help, touch controls, finish/wrecked card. */
+.game { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.g-panel { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); display: grid; gap: 6px; padding: 10px 14px; background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 12px; min-width: min(320px, 70vw); }
+.g-fuel { display: grid; grid-template-columns: auto 1fr 3ch; gap: 10px; align-items: center; }
+.g-bar { height: 8px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.g-bar i { display: block; height: 100%; width: 60%; background: var(--gas); transition: width .15s linear; }
+.g-bar i.low { background: var(--red); }
+.g-fuel b, .g-stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
+.g-stats { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.g-toast { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3.4vw, 34px); text-transform: uppercase; color: var(--fg); text-shadow: 0 2px 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .25s; white-space: nowrap; }
+.g-toast.show { opacity: 1; }
+.g-help { position: absolute; left: var(--gutter); bottom: 12px; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--muted); background: rgba(9,13,24,.6); padding: 6px 10px; border-radius: 6px; max-width: 60ch; }
+kbd { font-family: var(--mono); font-size: 10px; color: var(--fg); border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+.g-touch { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 14px; display: none; justify-content: space-between; gap: 10px; pointer-events: auto; }
+.g-touch div { display: flex; gap: 8px; }
+.g-touch button { font-family: var(--mono); font-size: 13px; text-transform: uppercase; color: var(--fg); background: rgba(9,13,24,.7); border: 1px solid var(--rule); border-radius: 10px; min-width: 56px; height: 56px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.g-touch button.gas { border-color: var(--red); } .g-touch button.jet { border-color: var(--gas); }
+.g-touch button.down { background: var(--rule); }
+@media (pointer: coarse) { .g-touch { display: flex; } .g-help { display: none; } }
+.g-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(9,13,24,.55); pointer-events: auto; }
+.g-card { display: grid; gap: 10px; justify-items: center; text-align: center; padding: 22px 26px; background: var(--night-2); border: 1px solid var(--rule); border-radius: 12px; }
+.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 42px; text-transform: uppercase; }
+.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 14px; }
+.g-row b { color: var(--fg); }
+.g-new { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dmg { color: var(--red-soft) !important; letter-spacing: .1em; }
+.stage.driving .stage-note { display: none; }
+@media (max-width: 560px) { .stage.driving .hud { display: none; } .stage.driving .stage-ctl { top: 14px; bottom: auto; } .stage.driving .g-panel { top: 104px; } .stage.driving .g-toast { top: 190px; } }
+
+.stage.driving .hud { display: none; }
+.g-panel { top: 14px; border-radius: 12px; background: rgba(9,13,24,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); grid-template-columns: auto 1fr; column-gap: 18px; align-items: center; min-width: min(460px, 86vw); }
+.g-speed { grid-row: span 3; display: grid; justify-items: center; line-height: 1; padding-right: 16px; border-right: 1px solid var(--rule); }
+.g-speed b { font-family: var(--display); font-weight: 800; font-size: 44px; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: center; }
+.g-toast { top: 140px; }
+.g-help { transition: opacity .6s; }
+.game.seasoned .g-help { opacity: 0; }
+.stage.driving .stage-ctl { bottom: 16px; }

@@ -36,22 +36,42 @@ Score is distance plus 100 per crate stack, 25 per canister, minus 200 per crash
 
 ![Drive it](docs/drive-it.png)
 
-## Pages
-
-- `index.html` is the app: one full-window 3D view with a top bar for the three stunt tabs, the story link, sound
-  and **full screen** (or press `F`; where a browser refuses full screen, the top bar folds away instead).
-- `about.html` is the story: the unveiling, the demo beats, the trims, a 0–60 drag strip, the timeline, what is
-  still unproven, how the simulation works, and sources.
-
 ## Run it
 
-It is a single static page. Open `index.html` in a browser, or serve the folder:
+Built with [Vite](https://vite.dev) and [three.js](https://threejs.org). You need Node 18 or newer.
 
 ```bash
-npm start
+npm install
+npm run dev        # local dev server with hot reload
+npm test           # headless physics checks for every stunt and the game
+npm run build      # static site in dist/
+npm run preview    # serve the built site
 ```
 
-Three.js loads from the jsDelivr CDN, so the page needs a network connection the first time.
+There are two pages: `index.html` is the full-window app (stunt tabs, story link, sound and **full screen**, or
+press `F`), and `about.html` is the story (the unveiling, the demo beats, the trims, a 0–60 drag strip, the
+timeline, what is still unproven, how the simulation works, and sources).
+
+## Project layout
+
+```
+index.html, about.html     page markup; each loads one entry module
+src/
+  main.js                  app entry: styles, module start-up order, first frame, render loop
+  config.js                shared constants: car dimensions, ramp geometry
+  physics/roadster-sim.js  the simulation (pure, no DOM; the tests import it directly)
+  car/                     the Roadster model: geometry, materials, assembly
+  scene/                   sky, ground, markings, floodlights
+  stunts/                  the lineup and the ramp
+  game/                    Drive it: course generation and game rules
+  run/runner.js            steps the physics and applies it to the scene and HUD
+  camera/, audio/, effects/, core/, ui/
+  styles/                  tokens, buttons, stage, game, app, story
+  story/                   the story page's script
+test/physics.test.mjs      headless checks
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to add a stunt or an obstacle.
 
 Driving (Drive it):
 
@@ -100,19 +120,15 @@ scaled by the touchdown speed. Volume and stereo pan follow the camera.
 
 ## Tests
 
-`test/physics.test.mjs` extracts the physics code straight from `index.html`, runs both stunts headlessly and
-checks the outcomes: lineup clearance, apex height, a full roll, landing speed, drift, hang height and where the
-ramp stunt lands.
-
-```bash
-npm install
-npm test
-```
+`npm test` imports `src/physics/roadster-sim.js` directly and runs every stunt and the game physics headlessly,
+checking the outcomes: lineup clearance, apex, a full roll, landing speeds, drift, hang height, the ramp stunt's
+x-axis flip and landing heading, crate busting, flying over walls, kicker-ramp launches and that a fast wall hit
+cannot tunnel through.
 
 ## Publish with GitHub Pages
 
-In the repository settings, open **Pages**, choose **Deploy from a branch**, and pick `main` with the root folder.
-The page has no build step.
+The workflow in `.github/workflows/deploy.yml` tests and builds every push and pull request, and deploys `main`.
+One-time setup: in the repository settings, open **Pages** and set **Source** to **GitHub Actions**.
 
 ## Sources
 

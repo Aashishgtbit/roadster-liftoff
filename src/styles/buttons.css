@@ -1,0 +1,11 @@
+/* Buttons, shared by both pages. */
+.btn[aria-pressed="true"] { border-color: var(--gas); color: var(--gas); }
+.btn { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg); background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; padding: 9px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+.btn.primary:hover { background: var(--red-soft); border-color: var(--red-soft); }
+.btn.icon { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+.btn.icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn.ghost { background: transparent; }
+.btn { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: 8px; transition: border-color .15s, color .15s, background .15s; }
+.btn.icon.fs-float { position: absolute; top: 14px; right: var(--gutter); z-index: 4; display: none; }

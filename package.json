@@ -1,14 +1,22 @@
 {
   "name": "roadster-liftoff",
-  "version": "1.0.0",
-  "description": "Unofficial fan page on the Oct 15, 2026 Tesla Roadster unveiling: two physics-simulated 3D stunts with live synthesised sound.",
+  "version": "2.0.0",
+  "description": "Unofficial fan app for the Oct 15, 2026 Tesla Roadster unveiling: physics-simulated 3D stunts and a drivable game with live synthesised sound.",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "npx --yes serve@14.2.4 .",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node test/physics.test.mjs"
   },
-  "devDependencies": {
+  "dependencies": {
     "three": "0.165.0"
+  },
+  "devDependencies": {
+    "vite": "6.4.4"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
