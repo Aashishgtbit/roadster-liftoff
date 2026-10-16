@@ -189,7 +189,7 @@ footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
 <div class="wrap stunts" role="tablist" aria-label="Choose a stunt">
   <span class="label">Choose a stunt</span>
   <button class="tab" type="button" role="tab" data-stunt="jump" aria-selected="true">Lineup jump<small>roll over five cars</small></button>
-  <button class="tab" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang<small>up the wall, flip, hover down</small></button>
+  <button class="tab" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang<small>up the wall, x-axis flip, drive away</small></button>
 </div>
 <div class="stage" id="stage">
   <canvas id="scene" aria-label="3D animation: a white roadster fires cold-gas thrusters, rolls upside down over a row of parked cars, a Semi and a Cybertruck at night, and lands." role="img"></canvas>
@@ -247,7 +247,7 @@ footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
         <li><span class="t">1</span><div><h3>A 1,900 kg body on four springs</h3><p>The car is a rigid body with real inertia for roll, pitch and yaw. Each wheel has its own spring and damper and a tyre that grips up to 1.15 g, so you can see the suspension unload during the spool and compress on landing.</p></div></li>
         <li><span class="t">2</span><div><h3>Ten nozzles, each with its own force</h3><p>Four floor nozzles near the wheel arches (up to 18 kN each), four in the diffuser and two in the nose. Every nozzle pushes at its own position, so firing one side harder spins the car. Valves take about 40 ms to respond.</p></div></li>
         <li><span class="t">3</span><div><h3>A flight computer flies the stunt</h3><p>The car on the night was remote-operated. Here a controller does the job. On the jump it lifts off, rolls 360° along the direction of travel, uses even bursts while the car is on its side to cancel sideways drift, holds the heading with the nose jets, and follows a glide path down to touch the ground at about 2 m/s.</p></div></li>
-        <li><span class="t">4</span><div><h3>The ramp: suction does the climbing</h3><p>Fans under the floor pull the car onto a curved wall with up to 30 kN, 1.6 times its weight. That is enough grip to drive up past vertical and pause upside down at about 12 m. Then, as in Tesla's video, it creeps on with the diffuser jets helping and tips off the top lip upside down. It keeps rotating the way the curve was turning it until it is upright beside the ramp, then hovers slowly down the face on its floor jets, with the diffuser and nose jets holding position, and settles at the foot of the ramp at under 1 m/s.</p></div></li>
+        <li><span class="t">4</span><div><h3>The ramp: suction does the climbing</h3><p>Fans under the floor pull the car onto a curved wall with up to 30 kN, 1.6 times its weight. That is enough grip to drive up past vertical and pause upside down at about 12 m. Then, as in Tesla's video, it creeps on with the diffuser jets helping and tips off the end of the runway upside down. Past the runway it rolls 180° about its own length, an x-axis flip, so it comes up on its wheels facing the opposite way to the runway. It hovers slowly down on its floor jets, with the diffuser and nose jets holding position, settles at the foot of the ramp at under 1 m/s and drives away.</p></div></li>
         <li><span class="t">5</span><div><h3>Sound from the numbers</h3><p>Nothing is recorded. The motor whine follows wheel speed, the hiss and roar follow total thrust, each valve pops as it opens, the fans whine with suction, and landings thump harder the faster the car comes down. Volume and stereo pan follow the camera.</p></div></li>
         <li><span class="t">6</span><div><h3>Track Mode aero</h3><p>The wing button cycles the three modes from Tesla's video. Road stows the wing, High-Downforce raises and pitches it, Low-Drag raises it flat. Each mode changes the downforce in the simulation.</p></div></li>
       </ol>
@@ -705,14 +705,14 @@ car.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true;
 // Fixed 240 Hz steps. Gravity, tyre grip, suspension, fan suction, aero drag and every nozzle's force and torque are
 // integrated; a scripted flight computer (the car was remote-operated on the night) decides how hard each nozzle fires.
 // Two stunts from the night: "jump" (roll over the lineup) and "ramp" (climb a curved wall on suction, pause upside down,
-// tip off the top lip, flip beside the ramp, hover down its face and land at its foot).
+// tip off the end of the runway, roll 180° about its length to land on the wheels, then drive away).
 function makeRoadsterSim(THREE, C) {
   const V = THREE.Vector3, Q = THREE.Quaternion;
   const M = 1900, g = 9.81, I = new V(820, 3900, 3500);          // kg; roll, yaw, pitch inertia (kg m²)
   const LS0 = 0.10, LFREE = LS0 + (M * g / 4) / 66000, LMAX = LFREE + 0.04, LMIN = 0.025;
   const K = 66000, DAMP = 5600, BUMP = 900000, MU = 1.15, CLAT = 9000;
   const VT = 9.5, SPOOL_AT = C.X_TAKE - 2.0, BURN = C.BURN ?? 0.26, T_ROLL = C.T_ROLL ?? 1.5, ROLL_AT = C.ROLL_AT ?? 0.3;
-  const RAMP = C.ramp, FAN_MAX = 1.6 * M * g, TH_HANG = C.TH_HANG ?? 0.74 * Math.PI, HANG_T = C.HANG_T ?? 1.3, FLIP_W = C.FLIP_W ?? 4.2;
+  const RAMP = C.ramp, FAN_MAX = 1.6 * M * g, TH_HANG = C.TH_HANG ?? 0.74 * Math.PI, HANG_T = C.HANG_T ?? 1.3, T_ROLL_R = C.T_ROLL_R ?? 0.8;
   const DT = 1 / 240;
   const wheels = C.XW.flatMap(x => [1, -1].map(s => ({ hp: new V(x, C.WR - C.COM + LS0, s * C.TRACK_Z), len: LS0, prevLen: LS0, F: 0, spin: 0, contact: false })));
   const noz = C.nozzles.map(n => ({ ...n, T: 0, cmd: 0 }));
@@ -750,6 +750,15 @@ function makeRoadsterSim(THREE, C) {
       }
     }
     return best;
+  }
+  // torque (in the car's frame) that turns it toward a target orientation along the shortest rotation, rate-limited
+  const _qe = new Q(), _qt = new Q(), _qy = new Q(), _ax = new V();
+  function attitude(qT, wMax, kw) {
+    _qe.copy(st.q).invert().multiply(qT);
+    if (_qe.w < 0) _qe.set(-_qe.x, -_qe.y, -_qe.z, -_qe.w);
+    const ang = 2 * Math.acos(Math.min(1, _qe.w)), sn = Math.sqrt(Math.max(1e-9, 1 - _qe.w * _qe.w)), wd = Math.min(wMax, 3.2 * ang);
+    const wb = _Iw.copy(st.w).applyQuaternion(_qi.copy(st.q).invert());
+    return { tx: I.x * kw * (_qe.x / sn * wd - wb.x), ty: I.y * kw * (_qe.y / sn * wd - wb.y), tz: I.z * kw * (_qe.z / sn * wd - wb.z), ang };
   }
   // split a wanted lift and roll / pitch torque across the four floor nozzles (they can only push)
   function allocDown(Tv, tx, tz) {
@@ -830,36 +839,40 @@ function makeRoadsterSim(THREE, C) {
         if (st.contacts === 0) setPhase("Flip"); break;
       }
       case "Flip": {
-        // keep rotating the way the curve was turning the car, round to upright, right beside the ramp. Spinning up and
-        // stopping push opposite ways, so they cancel. Whenever the floor faces the ground the jets carry the weight.
+        // past the end of the runway the car is upside down: roll it 180° about its own length (an x-axis flip), so it
+        // comes up on its wheels facing the way it is moving. Side-on, an even burst cancels sideways drift; once the
+        // floor faces the ground the jets start carrying the weight.
         st.fanCmd = 0;
-        const err = 2 * Math.PI - st.pitch, wWant = Math.max(0.3, Math.min(FLIP_W, 3 * err));
-        const up3 = _a.set(0, 1, 0).applyQuaternion(st.q), vxWant = Math.max(-3, Math.min(3, 0.8 * (RAMP.land - st.pos.x)));
+        if (st.pt < 1e-6) st.flip0 = st.roll;
+        const [d, rate] = profile(st.pt, Math.PI, T_ROLL_R), want = st.flip0 + d;
+        const up3 = _a.set(0, 1, 0).applyQuaternion(st.q);
         let Tv = 0;
         if (up3.y > 0.3) Tv = Math.max(0, M * (g + 6 * (-2.5 - st.vel.y))) / up3.y;
-        else if (Math.abs(up3.x) > 0.55) Tv = Math.max(0, M * 3 * (vxWant - st.vel.x) * Math.sign(up3.x));
-        allocDown(Math.min(Tv, 4 * down[0].Tmax * 0.85), I.x * (-30 * st.roll - 8 * A.wx), I.z * 9 * (wWant - A.wz));
-        yawHold(A, 1);
-        if (err < 0.1) setPhase("Hover");
+        else if (Math.abs(up3.z) > 0.6) Tv = Math.max(0, -M * 4 * (st.vel.z + 0.6 * st.pos.z) * Math.sign(up3.z));
+        allocDown(Math.min(Tv, 4 * down[0].Tmax * 0.7), I.x * (70 * (want - st.roll) + 16 * (rate - A.wx)), I.z * 10 * -A.wz);
+        if (st.pt >= T_ROLL_R && Math.abs(want - st.roll) < 0.12) setPhase("Hover");
         if (wheels.some(w => w.contact)) setPhase("Touchdown"); break;
       }
       case "Hover": {
-        // a slow, level descent down the face of the ramp: the floor jets hold the weight, the diffuser or nose jets
-        // push sideways to hold position over the landing spot at the foot of the ramp
+        // level out facing away from the ramp and hover slowly down; the diffuser or nose jets hold position over the
+        // landing spot at the foot of the ramp
         const h = Math.max(0, st.pos.y - C.COM - 0.1), vWant = -Math.max(0.6, Math.min(2.2, 0.32 * h + 0.4));
+        const leanZ = Math.max(-0.25, Math.min(0.25, -(0.12 * st.pos.z + 0.6 * st.vel.z)));
+        _qt.setFromAxisAngle(_ax.set(1, 0, 0), leanZ).multiply(_qy.setFromAxisAngle(_ax.set(0, 1, 0), Math.PI));
+        const att = attitude(_qt, 3, 8);
         const up = Math.max(0.3, _a.set(0, 1, 0).applyQuaternion(st.q).y);
-        const leanZ = Math.max(-0.25, Math.min(0.25, -(0.12 * st.pos.z + 0.6 * st.vel.z)));   // hold the centreline too
-        allocDown(Math.max(0, M * (g + 8 * (vWant - st.vel.y))) / up, I.x * (35 * (leanZ - st.roll) - 9 * A.wx), pitchT);
+        allocDown(Math.max(0, M * (g + 8 * (vWant - st.vel.y))) / up, att.tx, att.tz);
         const ax = 1.1 * (RAMP.land - st.pos.x) - 1.9 * st.vel.x, along = ax * Math.sign(A.fx || 1);
         if (along > 0) for (const n of rear) n.cmd = Math.min(1, M * along / (4 * n.Tmax));
         else for (const n of front) n.cmd = Math.min(1, M * -along / (2 * n.Tmax));
-        yawHold(A, 1);
+        for (const n of front) n.cmd = Math.max(n.cmd, Math.max(0, Math.min(1, att.ty / (-n.p.z) / n.Tmax)));
         if (wheels.some(w => w.contact)) setPhase("Touchdown"); break;
       }
+      case "Drive off": drive = M * 2.2 * (6 - fwd); if (st.pt > 2.2) setPhase("Brake"); break;
       case "Descend": descend(A, pitchT, 0); break;
     }
     switch (st.phase) {   // shared by both stunts once the car is back on the ground
-      case "Touchdown": allocDown(st.pt < 0.1 ? M * g * 0.6 : 0, 0, pitchT); drive = -M * 2.5 * fwd; if (st.pt > 0.25) setPhase("Brake"); break;
+      case "Touchdown": allocDown(st.pt < 0.1 ? M * g * 0.6 : 0, 0, pitchT); drive = -M * 2.5 * fwd; if (st.pt > 0.25) setPhase(st.scn === "ramp" ? "Drive off" : "Brake"); break;
       case "Brake": drive = -M * 2.5 * fwd; if (st.pt < 0.7) brakeJets(); if (Math.abs(fwd) < 0.12 && st.pt > 0.8) setPhase("Parked"); break;
       case "Parked": drive = -M * 3 * fwd; break;
     }
@@ -1151,7 +1164,8 @@ function simulate(dt) {
   hudPhase.textContent = st.phase;
   hudAlt.textContent = Math.max(0, st.pos.y - COM).toFixed(1) + " m";
   hudSpd.textContent = Math.round(st.vel.length() * 3.6) + " km/h";
-  hudRot.textContent = Math.round((((st.scn === "ramp" ? st.pitch : st.roll) * 180 / Math.PI) % 360 + 360) % 360) + "°";
+  const rampPitch = st.scn === "ramp" && ["Approach", "Fans", "Climb", "Hang", "Exit"].includes(st.phase);   // on the wall it pitches; past the runway it rolls
+  hudRot.textContent = Math.round((((rampPitch ? st.pitch : st.roll) * 180 / Math.PI) % 360 + 360) % 360) + "°";
   hudJets.textContent = on ? `${on} / 10 · ${Math.round(kN)} kN` : "0 / 10";
   hudJets.classList.toggle("on", on > 0);
   hudFan.textContent = st.fan > 0.02 ? Math.round(st.fan * sim.FAN_MAX / 1000) + " kN" : "off";
@@ -1168,7 +1182,7 @@ function shot() {
     case "Climb": case "Exit": wantPos.set(RAMP.cx + 1.5, 7.2, 35); wantLook.set(RAMP.cx + 1.5, 7.2, 0); return;
     case "Hang": wantPos.set(RAMP.cx - 4.5, 1.5, 7.5); wantLook.set(cx, cy - 0.4, 0); return;
     case "Flip": case "Hover": case "Descend": wantPos.set(RAMP.cx - 6, 0.8 + cy * 0.85, 16); wantLook.set(cx - 0.5, cy, cz * 0.5); return;   // tracks down the face, like the close-up in the video
-    case "Touchdown": case "Brake": wantPos.set(cx - 4, 1.6, cz + 8); wantLook.set(cx, 0.7, cz); return;
+    case "Touchdown": case "Drive off": case "Brake": wantPos.set(cx + 6, 1.7, cz + 7); wantLook.set(cx - 1, 0.7, cz); return;
   }
   switch (st.phase) {
     case "Approach": case "Spool": case "Fans": wantPos.set(cx + 3.6, 1.05, cz + 8.2); wantLook.set(cx + 0.6, 0.7, cz); break;

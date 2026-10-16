@@ -51,15 +51,22 @@ function check(name, fn) { try { fn(); console.log(`ok   ${name}`); } catch (e) 
   check(`jump: stays near the centreline (max ${maxZ.toFixed(2)} m)`, () => assert.ok(maxZ < 4));
 }
 
-// ramp hang: climb on suction, pause upside down, tip off the lip, flip, hover down, land at the foot
+// ramp hang: climb on suction, pause upside down, tip off the end of the runway, roll 180° about the car's length
+// (an x-axis flip), land on the wheels facing opposite to the runway, drive away
 {
-  let hangY = null;
-  const r = run("ramp", 18, () => { if (st.phase === "Hang" && hangY === null) hangY = st.pos.y; });
-  check("ramp: reaches every phase", () => { for (const p of ["Approach", "Fans", "Climb", "Hang", "Exit", "Flip", "Hover", "Touchdown", "Brake", "Parked"]) assert.ok(r.phases.includes(p), `missing ${p}`); });
+  let hangY = null, tdX = null, tdUp = null, tdFwd = null;
+  const r = run("ramp", 20, () => {
+    if (st.phase === "Hang" && hangY === null) hangY = st.pos.y;
+    if (st.phase === "Touchdown" && tdX === null) { tdX = st.pos.x; tdUp = new V(0, 1, 0).applyQuaternion(st.q).y; tdFwd = new V(1, 0, 0).applyQuaternion(st.q).x; }
+  });
+  check("ramp: reaches every phase", () => { for (const p of ["Approach", "Fans", "Climb", "Hang", "Exit", "Flip", "Hover", "Touchdown", "Drive off", "Brake", "Parked"]) assert.ok(r.phases.includes(p), `missing ${p}`); });
   check(`ramp: hangs upside down high on the wall (${hangY?.toFixed(2)} m)`, () => assert.ok(hangY > 10));
   check(`ramp: soft touchdown (${r.touchdownVy.toFixed(2)} m/s)`, () => assert.ok(r.touchdownVy > -1.5));
-  check(`ramp: upright at the end (pitch ${(st.pitch * 180 / Math.PI).toFixed(0)}°)`, () => assert.ok(Math.abs(st.pitch - 2 * Math.PI) < 0.15));
-  check(`ramp: lands at the foot of the ramp (x ${st.pos.x.toFixed(2)})`, () => assert.ok(st.pos.x > -3 && st.pos.x < RAMP.cx - 1));
+  check(`ramp: the flip is a 180° roll about the car's length (${(st.roll * 180 / Math.PI).toFixed(0)}°)`, () => assert.ok(Math.abs(Math.abs(st.roll) - Math.PI) < 0.2));
+  check(`ramp: lands on its wheels (up ${tdUp.toFixed(2)})`, () => assert.ok(tdUp > 0.95));
+  check(`ramp: lands facing opposite to the runway (forward x ${tdFwd.toFixed(2)})`, () => assert.ok(tdFwd < -0.95));
+  check(`ramp: lands at the foot of the ramp (x ${tdX.toFixed(2)})`, () => assert.ok(tdX > -3 && tdX < RAMP.cx - 1));
+  check(`ramp: then drives away from the ramp (x ${st.pos.x.toFixed(2)})`, () => assert.ok(st.pos.x < tdX - 5));
 }
 
 if (failures) { console.log(`\n${failures} check(s) failed`); process.exit(1); }

@@ -16,8 +16,9 @@ real-time 3D stunts that are **computed by a physics simulation**, with sound ge
 sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s.
 
 **Ramp hang.** Suction fans pull the car onto a tall curved wall. It climbs past vertical, pauses upside down
-about 12 m up, creeps onto the top lip and tips off. It keeps rotating until it is upright beside the ramp,
-then hovers slowly down the face on its jets and settles at the foot of the ramp.
+about 12 m up, creeps to the end of the runway and tips off upside down. Past the runway it rolls 180° about
+its own length (an x-axis flip), so it comes up on its wheels facing the opposite way to the runway, hovers slowly
+down on its jets, settles at the foot of the ramp and drives away.
 
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
@@ -53,7 +54,7 @@ Everything runs at a fixed 240 Hz in the browser:
 - **Suction fans.** Up to 1.6 times the car's weight, pulling the floor toward the surface the wheels are on.
 - **Aero.** Drag, plus downforce that depends on the wing mode.
 - **Flight computer.** The car was remote-operated on the night; here a controller flies each stunt phase by phase:
-  roll and flip profiles, heading hold with the nose jets, sideways drift cancelling, a landing glide path and a
+  roll profiles, a quaternion attitude hold, heading hold with the nose jets, sideways drift cancelling, a landing glide path and a
   hover descent.
 
 The sound is synthesised with the Web Audio API from the simulation state: motor whine from wheel speed, tyre
