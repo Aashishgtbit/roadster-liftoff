@@ -9,7 +9,7 @@ import { lineupObstacles } from "../stunts/lineup-layout";
 import { isDriveOver, onDriveBust, onDriveHit, onDriveLanding, startDrive, updateDrive } from "./drive-game";
 import { clearFeedback, showToast, updateFeedback } from "./feedback";
 import { applyControls } from "./input";
-import { hideResults } from "./results";
+import { clearResults } from "./results";
 import { isStuntOver, onStuntHit, onStuntLanding, startStunt, updateStunt } from "./stunt-play";
 import { gameUI, setPanelFuel, setPanelSpeed } from "./ui";
 
@@ -27,6 +27,8 @@ let watchDemo: (scenario: Scenario) => void = () => {};
 export function onWatchDemo(handler: (scenario: Scenario) => void) { watchDemo = handler; }
 
 export const isPlaying = () => carState.pilot === "player";
+/** The run has ended and the results card is up. */
+export const isRunOver = () => isPlaying() && (carState.scenario === "drive" ? isDriveOver() : isStuntOver());
 
 /** Put the car on the start line of `scenario`, flown by `pilot`, with that scenario's obstacles. */
 export function restartRun(scenario: Scenario, pilot: Pilot) {
@@ -40,7 +42,7 @@ export function restartRun(scenario: Scenario, pilot: Pilot) {
 export function startPlay(scenario: Scenario, newLayout = false) {
   restartRun(scenario, "player");
   clearFeedback();
-  hideResults();
+  clearResults();
   gameUI.tip.textContent = TIPS[scenario];
   gameUI.root.classList.remove("seasoned");
   if (scenario === "drive") startDrive(newLayout, fresh => startPlay("drive", fresh));

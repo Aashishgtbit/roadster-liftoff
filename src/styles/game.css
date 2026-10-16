@@ -47,15 +47,21 @@
 @media (pointer: coarse) { .g-touch { display: flex; } .g-help { display: none; } }
 
 /* results card */
-.g-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(9,13,24,.55); pointer-events: auto; }
-.g-card { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 22px 26px; background: var(--night-2); border: 1px solid var(--rule); border-radius: 14px; max-width: min(520px, 92vw); }
-.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 42px; text-transform: uppercase; }
-.g-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.g-tiles span { display: grid; gap: 2px; min-width: 92px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px; background: rgba(9,13,24,.5); }
-.g-tiles b { font-family: var(--display); font-weight: 800; font-size: 22px; line-height: 1.1; }
+/* results: a compact card docked at the side, no backdrop, so the scene stays in view behind it */
+.g-over { position: absolute; top: 14px; right: var(--gutter); pointer-events: none; animation: g-slide-in .3s ease-out; }
+@keyframes g-slide-in { from { opacity: 0; transform: translateX(24px); } }
+.g-card { position: relative; display: grid; gap: 8px; justify-items: center; text-align: center; width: min(300px, calc(100vw - 2 * var(--gutter))); padding: 14px 16px 16px;
+  background: rgba(16,23,42,.78); border: 1px solid var(--rule); border-radius: 14px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); pointer-events: auto; }
+.g-close { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.g-close:hover { background: var(--rule); color: var(--fg); }
+.g-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1.1; text-transform: uppercase; }
+.g-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; }
+.g-tiles span { display: grid; gap: 1px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 9px; background: rgba(9,13,24,.5); }
+.g-tiles b { font-family: var(--display); font-weight: 800; font-size: 18px; line-height: 1.15; }
 .g-tiles small { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-.g-note { margin: 0; color: var(--amber); font-size: 14px; }
-.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 14px; }
+.g-note { margin: 0; color: var(--amber); font-size: 13px; line-height: 1.4; }
+.g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 13px; }
 .g-row b { color: var(--fg); }
 .g-new { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
 .g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -69,3 +75,21 @@
   .g-stats { grid-template-columns: repeat(2, auto); }
   .g-toast { top: 196px; font-size: 22px; }
 }
+/* after a run the controls are locked: the help and touch buttons step aside */
+.game.over .g-help, .game.over .g-touch { display: none; }
+/* narrower screens: the top is taken by the panel, so the card becomes a short strip along the bottom */
+@media (max-width: 1100px) {
+  .g-over { top: auto; bottom: 16px; left: var(--gutter); right: auto; animation: none; }
+  .g-card { width: min(440px, calc(100vw - 2 * var(--gutter))); grid-template-columns: 1fr auto; justify-items: start; text-align: left; gap: 4px 14px; padding: 10px 14px; }
+  .g-card > #goTitle, .g-card > .g-big, .g-card > .g-new { grid-column: 1; }
+  .g-big { font-size: 26px; }
+  .g-btns { grid-column: 2; grid-row: 1 / span 3; flex-direction: column; align-self: end; }
+  .g-btns .btn { padding: 7px 12px; }
+  .g-tiles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+  .g-tiles span { padding: 4px 8px; }
+  .g-tiles b { font-size: 15px; }
+  .g-note, .g-row { grid-column: 1 / -1; }
+  .g-close { top: 4px; right: auto; left: auto; position: static; grid-column: 2; grid-row: 1; justify-self: end; margin: -4px -6px 0 0; }
+  .g-btns { grid-row: 2 / span 2; }
+}
+@media (max-width: 640px) { .g-over { bottom: 16px; } }

@@ -22,6 +22,7 @@ export const resultsCard = {
   note: byId("goNote"),
   best: byId("goBest"),
   newBest: byId("goNew"),
+  close: byId<HTMLButtonElement>("goClose"),
   primary: byId<HTMLButtonElement>("againBtn"),
   secondary: byId<HTMLButtonElement>("newCourseBtn"),
 };

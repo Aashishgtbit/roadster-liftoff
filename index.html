@@ -38,7 +38,8 @@
     <div class="g-help" id="gameHelp"><p class="g-tip" id="gameTip"></p></div>
     <div class="g-touch" id="gameTouch" aria-hidden="true"></div>
     <div class="g-over" id="gameOver" hidden>
-      <div class="g-card">
+      <div class="g-card" role="dialog" aria-labelledby="goTitle">
+        <button class="g-close" id="goClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <span class="label" id="goTitle">Finish</span>
         <p class="g-big"><b id="goScore">0</b> points</p>
         <p class="g-new" id="goNew" hidden>New best!</p>
