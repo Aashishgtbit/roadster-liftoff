@@ -76,20 +76,32 @@ function check(name, fn) { try { fn(); console.log(`ok   ${name}`); } catch (e) 
   const boxes = [
     { id: "crates", x0: 40, x1: 41.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true },
     { id: "wall", kind: "wall", x0: 90, x1: 91, y0: 0, y1: 2.4, z0: -8, z1: 8 },
-    { id: "slow-crates", x0: 160, x1: 161.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true },
+    { id: "slow-crates", x0: 200, x1: 201.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true },
   ];
   sim.reset("drive"); st.boxes = boxes; events.length = 0;
   let maxH = 0, stoppedAt = null;
   for (let i = 0; i < 40 / sim.DT; i++) {
     st.input.throttle = st.pos.x < 120 ? 1 : st.vel.x > 4 ? -1 : 0.3;   // brake to a crawl into the last stack: it must not burst
-    st.input.jet = st.pos.x > 72 && st.pos.x < 92; st.input.steer = 0;
+    st.input.jet = (90 - st.pos.x) / Math.max(1, st.vel.x) < 0.95 && st.pos.x < 92; st.input.steer = 0;   // like a player: about a second before the wall
     sim.substep(); maxH = Math.max(maxH, st.pos.y - COM);
-    if (st.pos.x > 150 && Math.abs(st.vel.x) < 0.05 && stoppedAt === null) stoppedAt = st.pos.x;
+    if (st.pos.x > 190 && Math.abs(st.vel.x) < 0.05 && stoppedAt === null) stoppedAt = st.pos.x;
   }
   check("drive: crates burst when hit fast", () => assert.ok(events.includes("bust crates"), events.join(", ")));
   check("drive: the jets clear the wall without touching it", () => { assert.ok(!events.some(e => e.startsWith("hit wall")), events.join(", ")); assert.ok(st.pos.x > 100); });
   check(`drive: the jets hover rather than rocket (max ${maxH.toFixed(2)} m)`, () => assert.ok(maxH > 2.4 && maxH < 6));
-  check(`drive: crates hold when hit slowly (stopped at x ${stoppedAt?.toFixed(1)})`, () => { assert.ok(!events.includes("bust slow-crates")); assert.ok(stoppedAt !== null && stoppedAt < 160); });
+  check(`drive: crates hold when hit slowly (stopped at x ${stoppedAt?.toFixed(1)})`, () => { assert.ok(!events.includes("bust slow-crates")); assert.ok(stoppedAt !== null && stoppedAt < 200); });
+}
+
+// drive mode: a kicker ramp launches the car over a wall without fuel; a fast wall hit stops the car, never tunnels
+{
+  const wall = { id: "wall", kind: "wall", x0: 90, x1: 91, y0: 0, y1: 2.4, z0: -8, z1: 8 };
+  sim.reset("drive"); st.boxes = [{ id: "ramp", ramp: true, x0: 67, x1: 74, h: 1.8, z0: -3.2, z1: 3.2 }, wall]; events.length = 0;
+  for (let i = 0; i < 12 / sim.DT; i++) { st.input.throttle = 1; st.input.jet = false; st.input.steer = 0; sim.substep(); }
+  check("drive: a kicker ramp carries the car over a wall with no jets", () => { assert.ok(!events.some(e => e.startsWith("hit wall")), events.join(", ")); assert.ok(st.pos.x > 100); });
+  sim.reset("drive"); st.boxes = [wall]; events.length = 0;
+  let fastest = 0;
+  for (let i = 0; i < 10 / sim.DT; i++) { st.input.throttle = 1; st.input.jet = false; sim.substep(); fastest = Math.max(fastest, st.vel.x); }
+  check(`drive: a ${Math.round(fastest * 3.6)} km/h wall hit stops the car in front of the wall`, () => { assert.ok(events.some(e => e.startsWith("hit wall"))); assert.ok(st.pos.x < wall.x0, `car at x ${st.pos.x.toFixed(2)}`); });
 }
 
 if (failures) { console.log(`\n${failures} check(s) failed`); process.exit(1); }

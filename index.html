@@ -67,7 +67,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--gas); outline-o
 .g-bar i { display: block; height: 100%; width: 60%; background: var(--gas); transition: width .15s linear; }
 .g-bar i.low { background: var(--red); }
 .g-fuel b, .g-stats b { color: var(--fg); font-weight: 500; font-variant-numeric: tabular-nums; }
-.g-stats { display: flex; justify-content: space-between; gap: 16px; }
+.g-stats { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 .g-toast { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-weight: 800; font-size: clamp(22px, 3.4vw, 34px); text-transform: uppercase; color: var(--fg); text-shadow: 0 2px 12px rgba(0,0,0,.8); opacity: 0; transition: opacity .25s; white-space: nowrap; }
 .g-toast.show { opacity: 1; }
 .g-help { position: absolute; left: var(--gutter); bottom: 12px; margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--muted); background: rgba(9,13,24,.6); padding: 6px 10px; border-radius: 6px; max-width: 60ch; }
@@ -83,6 +83,9 @@ kbd { font-family: var(--mono); font-size: 10px; color: var(--fg); border: 1px s
 .g-big { margin: 0; font-family: var(--display); font-weight: 800; font-size: 42px; text-transform: uppercase; }
 .g-row { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; color: var(--muted); font-size: 14px; }
 .g-row b { color: var(--fg); }
+.g-new { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+.g-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dmg { color: var(--red-soft) !important; letter-spacing: .1em; }
 .stage.driving .stage-note { display: none; }
 @media (max-width: 560px) { .stage.driving .hud { display: none; } .stage.driving .stage-ctl { top: 14px; bottom: auto; } .stage.driving .g-panel { top: 104px; } .stage.driving .g-toast { top: 190px; } }
 @media (max-width: 560px) { .stage-ctl { top: auto; bottom: 34px; left: var(--gutter); right: var(--gutter); flex-wrap: wrap; } .stage-note { left: var(--gutter); } }
@@ -214,27 +217,30 @@ footer p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
 <div class="wrap stunts" role="tablist" aria-label="Choose a stunt">
   <span class="label">Choose a stunt</span>
   <button class="tab" type="button" role="tab" data-stunt="jump" aria-selected="true">Lineup jump<small>roll over five cars</small></button>
-  <button class="tab" type="button" role="tab" data-stunt="drive" aria-selected="false">Drive it<small>your turn: bust, fly, refuel</small></button>
+  <button class="tab" type="button" role="tab" data-stunt="drive" aria-selected="false">Drive it<small>your turn: bust, fly, race the clock</small></button>
   <button class="tab" type="button" role="tab" data-stunt="ramp" aria-selected="false">Ramp hang<small>up the wall, x-axis flip, drive away</small></button>
 </div>
 <div class="stage" id="stage">
   <div class="game" id="gameUI" hidden>
     <div class="g-panel">
       <div class="g-fuel"><span class="label">Fuel</span><div class="g-bar"><i id="fuelBar"></i></div><b id="fuelNum">60</b></div>
-      <div class="g-stats"><span><span class="label">Score</span> <b id="gameScore">0</b></span><span><span class="label">To finish</span> <b id="gameLeft">330 m</b></span></div>
+      <div class="g-stats"><span><span class="label">Score</span> <b id="gameScore">0</b></span><span><span class="label">Time</span> <b id="gameTime">0.0 s</b></span><span><span class="label">Best</span> <b id="gameBest">—</b></span></div>
+      <div class="g-stats"><span><span class="label">To finish</span> <b id="gameLeft">330 m</b></span><span><span class="label">Damage</span> <b id="gameDamage" class="dmg">○○○</b></span><span><span class="label">Course</span> <b id="gameCourse">#0</b></span></div>
     </div>
     <div class="g-toast" id="gameToast">Gas to start</div>
-    <p class="g-help"><kbd>W</kbd>/<kbd>↑</kbd> gas · <kbd>S</kbd>/<kbd>↓</kbd> brake · <kbd>A</kbd><kbd>D</kbd> steer · <kbd>Space</kbd> jets (fly) · <kbd>Shift</kbd> boost · <kbd>R</kbd> reset<br>Bust crates at 45+ km/h, fly over walls, grab fuel cans.</p>
+    <p class="g-help"><kbd>W</kbd>/<kbd>↑</kbd> gas · <kbd>S</kbd>/<kbd>↓</kbd> brake · <kbd>A</kbd><kbd>D</kbd> steer · <kbd>Space</kbd> jets (fly) · <kbd>Shift</kbd> boost · <kbd>R</kbd> reset<br>Bust crates at 45+ km/h · fly over walls, or hit a yellow ramp fast · 3 wall crashes wreck the car.</p>
     <div class="g-touch" aria-hidden="true">
       <div><button type="button" data-key="left">◀</button><button type="button" data-key="right">▶</button></div>
       <div><button type="button" data-key="brake">Brake</button><button type="button" data-key="boost">Boost</button><button type="button" data-key="jet" class="jet">Jets</button><button type="button" data-key="gas" class="gas">Gas</button></div>
     </div>
     <div class="g-over" id="gameOver" hidden>
       <div class="g-card">
-        <span class="label">Finish</span>
+        <span class="label" id="goTitle">Finish</span>
         <p class="g-big"><b id="goScore">0</b> points</p>
+        <p class="g-new" id="goNew" hidden>New best!</p>
         <p class="g-row"><span>Time <b id="goTime">0 s</b></span><span>Crates busted <b id="goBusts">0</b></span><span>Fuel cans <b id="goCans">0</b></span></p>
-        <button class="btn primary" id="againBtn" type="button">Drive again</button>
+        <p class="g-row"><span>Your best <b id="goBest">—</b></span></p>
+        <div class="g-btns"><button class="btn primary" id="againBtn" type="button">Same course</button><button class="btn" id="newCourseBtn" type="button">New course</button></div>
       </div>
     </div>
   </div>
@@ -429,7 +435,8 @@ const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("scene");
 const msg = document.getElementById("stageMsg");
-document.getElementById("againBtn").addEventListener("click", () => { restart("drive"); gameReset(); canvas.focus({ preventScroll: true }); });
+document.getElementById("againBtn").addEventListener("click", () => { restart("drive"); gameReset(false); canvas.focus({ preventScroll: true }); });
+document.getElementById("newCourseBtn").addEventListener("click", () => { restart("drive"); gameReset(true); canvas.focus({ preventScroll: true }); });
 const hudPhase = document.getElementById("hudPhase"), hudRot = document.getElementById("hudRot"), hudJets = document.getElementById("hudJets"), hudAlt = document.getElementById("hudAlt"), hudSpd = document.getElementById("hudSpd");
 const soundBtn = document.getElementById("soundBtn"), stuntBtns = [...document.querySelectorAll("[data-stunt]")], hudFan = document.getElementById("hudFan");
 const pauseBtn = document.getElementById("pauseBtn"), replayBtn = document.getElementById("replayBtn"), camBtn = document.getElementById("camBtn"), wingBtn = document.getElementById("wingBtn");
@@ -792,8 +799,17 @@ function makeRoadsterSim(THREE, C) {
   function contact(P, d) {
     let best = null;
     if (-d.y > 0.3) best = { len: (P.y - C.WR) / -d.y, nx: 0, ny: 1 };
-    if (-d.y > 0.3) for (const b of st.boxes) {
-      if (b.gone || P.x < b.x0 || P.x > b.x1 || P.z < b.z0 || P.z > b.z1 || P.y < b.y1 - 0.05) continue;
+    for (const b of st.boxes) {
+      if (b.gone || P.z < b.z0 || P.z > b.z1) continue;
+      if (b.ramp) {   // kicker ramp: a wedge rising from 0 at x0 to height h at x1
+        const L = b.x1 - b.x0, nl = Math.hypot(b.h, L), nx = -b.h / nl, ny = L / nl;
+        const dist0 = nx * (P.x - b.x0) + ny * P.y, dn = -(d.x * nx + d.y * ny);
+        if (dn < 0.3 || dist0 < -0.3) continue;
+        const len = (dist0 - C.WR) / dn, fx = P.x + d.x * len - nx * C.WR;
+        if (fx >= b.x0 && fx <= b.x1 && (!best || len < best.len)) best = { len, nx, ny };
+        continue;
+      }
+      if (-d.y < 0.3 || P.x < b.x0 || P.x > b.x1 || P.y < b.y1 - 0.05) continue;
       const len = (P.y - b.y1 - C.WR) / -d.y;
       if (!best || len < best.len) best = { len, nx: 0, ny: 1 };
     }
@@ -863,8 +879,9 @@ function makeRoadsterSim(THREE, C) {
       const inp = st.input, spd = Math.abs(fwd), flying = st.contacts === 0, gas = st.fuel > 0;
       // steering eases toward the input; less lock at speed
       st.steerAng += (-inp.steer * 0.42 / (1 + spd / 14) - st.steerAng) * Math.min(1, DT * 8);
-      if (inp.throttle > 0) drive = fwd < 42 ? M * 4.2 * inp.throttle : 0;
-      else if (inp.throttle < 0) drive = fwd > 0.5 ? -M * 7 : (fwd > -8 ? -M * 2.5 : 0);
+      // Roadster-like punch: ~0.9 g off the line (tyre grip caps it), 150 km/h top speed
+      if (inp.throttle > 0) drive = fwd < 42 ? M * 9 * inp.throttle * (1 - Math.max(0, fwd - 30) / 12) : 0;
+      else if (inp.throttle < 0) drive = fwd > 0.5 ? -M * 9 : (fwd > -8 ? -M * 4 : 0);
       else drive = -M * 0.3 * Math.sign(fwd) * Math.min(1, spd);
       if (inp.jet && gas) {
         // floor jets lift the car and hold it level; steering turns it in the air with the nose jets
@@ -876,9 +893,22 @@ function makeRoadsterSim(THREE, C) {
         for (const n of front) n.cmd = Math.max(n.cmd, Math.max(0, Math.min(1, att.ty / (-n.p.z) / n.Tmax)));
         st.fuel -= 15 * DT;
       }
+      else if (flying && gas) {
+        // stability assist: in the air the flight computer pulses the floor jets to keep the car level (small fuel cost)
+        _qt.setFromAxisAngle(_ax.set(0, 1, 0), A.yaw);
+        const att = attitude(_qt, 2.5, 5);
+        allocDown(0, att.tx, att.tz); st.fuel -= 3 * DT;
+      }
       if (inp.boost && gas) { for (const n of rear) n.cmd = 1; st.fuel -= 12 * DT; }
       if (!flying && !inp.jet && !inp.boost) st.fuel += 4 * DT;   // an on-board compressor slowly refills the tanks
       st.fuel = Math.max(0, Math.min(100, st.fuel));
+      // stuck on its roof or side for over a second: set it back on its wheels, keeping the heading
+      const upNow = _a.set(0, 1, 0).applyQuaternion(st.q).y;
+      st.flipT = upNow < 0.4 && st.vel.length() < 1.5 ? (st.flipT || 0) + DT : 0;
+      if (st.flipT > 1.1) {
+        st.q.setFromAxisAngle(_ax.set(0, 1, 0), A.yaw); st.w.set(0, 0, 0); st.vel.set(0, 0, 0);
+        st.pos.y = Math.max(st.pos.y, C.COM + 0.35); st.roll = st.pitch = 0; st.flipT = 0; C.onRecover?.();
+      }
       st.phase = flying ? (inp.jet && gas ? "Flying" : "Airborne") : inp.boost && gas ? "Boost" : spd > 0.3 || inp.throttle ? "Driving" : st.phase === "Ready" ? "Ready" : "Stopped";
     } else if (st.scn === "jump") switch (st.phase) {
       case "Approach": drive = M * 2.2 * (VT - fwd); if (st.pos.x > SPOOL_AT) setPhase("Spool"); break;
@@ -954,7 +984,7 @@ function makeRoadsterSim(THREE, C) {
       case "Brake": drive = -M * 2.5 * fwd; if (st.pt < 0.7) brakeJets(); if (Math.abs(fwd) < 0.12 && st.pt > 0.8) setPhase("Parked"); break;
       case "Parked": drive = -M * 3 * fwd; break;
     }
-    const lim = st.scn === "ramp" ? 34000 : st.scn === "drive" ? 16000 : 14000;
+    const lim = st.scn === "ramp" || st.scn === "drive" ? 34000 : 14000;
     return Math.max(-lim, Math.min(lim, drive)) / 4;
   }
   function substep() {
@@ -994,6 +1024,12 @@ function makeRoadsterSim(THREE, C) {
         if (th > 0.02 && th < RAMP.thMax && ln - RAMP.R > pen) { pen = ln - RAMP.R; nx = -dx / ln; ny = -dy / ln; }
       }
       for (const b of st.boxes) {
+        if (b.ramp) {   // body below a ramp's slope is pushed out along the slope's normal
+          if (P.z < b.z0 || P.z > b.z1 || P.x < b.x0 || P.x > b.x1) continue;
+          const L = b.x1 - b.x0, nl = Math.hypot(b.h, L), rx = -b.h / nl, ry = L / nl, dist = rx * (P.x - b.x0) + ry * P.y;
+          if (dist < 0 && dist > -0.8 && -dist > pen) { pen = -dist; nx = rx; ny = ry; nz = 0; }
+          continue;
+        }
         if (b.gone || P.x < b.x0 || P.x > b.x1 || P.y < b.y0 || P.y > b.y1 || P.z < b.z0 || P.z > b.z1) continue;
         // push out through the shallowest side; the top only counts if the point came down onto it (no launching
         // a car that is scraping up a wall face)
@@ -1003,6 +1039,9 @@ function makeRoadsterSim(THREE, C) {
         const closing = -(st.vel.x * f[1] + st.vel.y * f[2] + st.vel.z * f[3]);
         if (b.bust && closing > BUST_SPEED) { b.gone = true; st.vel.multiplyScalar(0.88); C.onBust?.(b, closing); continue; }
         if (closing > 4 && !b.hitT) C.onHit?.(b, closing);
+        // an impact, not a spring: on first contact the speed into the obstacle goes at once (with a small bounce),
+        // so a fast car cannot tunnel through a 1 m wall between physics steps
+        if (closing > 2 && !b.hitT) { st.vel.x += f[1] * closing * 1.15; st.vel.y += f[2] * closing * 1.15; st.vel.z += f[3] * closing * 1.15; st.w.multiplyScalar(0.5); }
         b.hitT = 0.4;
         if (f[0] > pen) { pen = f[0]; nx = f[1]; ny = f[2]; nz = f[3]; }
       }
@@ -1161,59 +1200,82 @@ const rampGroup = new THREE.Group(); rampGroup.visible = false; scene.add(rampGr
 }
 
 /* ---------- "Drive it": the player takes the wheel. Bust crates or fly over them, fly over walls, collect fuel ---------- */
-const FINISH_X = 330;
-const gameUI = document.getElementById("gameUI"), gameToast = document.getElementById("gameToast"), gameOver = document.getElementById("gameOver");
-const fuelBar = document.getElementById("fuelBar"), fuelNum = document.getElementById("fuelNum"), gameScore = document.getElementById("gameScore"), gameLeft = document.getElementById("gameLeft");
-const goScore = document.getElementById("goScore"), goTime = document.getElementById("goTime"), goBusts = document.getElementById("goBusts"), goCans = document.getElementById("goCans");
+// Every run gets a new random layout (or retry the same one). Kicker ramps launch the car without fuel. Hitting a wall
+// above 35 km/h is a crash; three crashes wreck the car. Best time and score are remembered in this browser.
+const FINISH_X = 330, CRASH_SPEED = 9.7, MAX_CRASHES = 3;
+const $ = id => document.getElementById(id);
+const gameUI = $("gameUI"), gameToast = $("gameToast"), gameOver = $("gameOver");
+const fuelBar = $("fuelBar"), fuelNum = $("fuelNum"), gameScore = $("gameScore"), gameLeft = $("gameLeft"), gameTime = $("gameTime"), gameBest = $("gameBest"), gameCourse = $("gameCourse"), gameDamage = $("gameDamage");
+const goTitle = $("goTitle"), goScore = $("goScore"), goTime = $("goTime"), goBusts = $("goBusts"), goCans = $("goCans"), goBest = $("goBest"), goNew = $("goNew");
 const course = new THREE.Group(); course.visible = false; scene.add(course);
-const game = { boxes: [], cans: [], debris: [], started: false, finished: false, t: 0, busts: 0, cansGot: 0, best: 0, toastT: 0 };
-{
-  const canvasTex = (w, h, draw) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
-  const crateTex = canvasTex(128, 128, (x, w, h) => {
-    x.fillStyle = "#b9803f"; x.fillRect(0, 0, w, h);
-    x.strokeStyle = "#6e4519"; x.lineWidth = 10; x.strokeRect(5, 5, w - 10, h - 10);
+const obstacles = new THREE.Group(); course.add(obstacles);
+const game = { boxes: [], cans: [], debris: [], seed: 0, started: false, over: false, t: 0, busts: 0, cansGot: 0, crashes: 0, best: 0, toastT: 0, shake: 0 };
+const store = { get() { try { return JSON.parse(localStorage.getItem("roadster-best") || "{}"); } catch { return {}; } },
+                set(v) { try { localStorage.setItem("roadster-best", JSON.stringify(v)); } catch { /* private window: keep it for this visit only */ } } };
+let bestRec = store.get();
+const canvasTex = (w, h, draw) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
+const MAT = (() => {
+  const crate = canvasTex(128, 128, (x, w, h) => {
+    x.fillStyle = "#b9803f"; x.fillRect(0, 0, w, h); x.strokeStyle = "#6e4519"; x.lineWidth = 10; x.strokeRect(5, 5, w - 10, h - 10);
     x.lineWidth = 8; x.beginPath(); x.moveTo(8, 8); x.lineTo(w - 8, h - 8); x.stroke();
     x.fillStyle = "rgba(0,0,0,0.12)"; for (let y = 24; y < h; y += 24) x.fillRect(10, y, w - 20, 2);
   });
-  const wallTex = canvasTex(256, 64, (x, w, h) => {
-    x.fillStyle = "#e9ebee"; x.fillRect(0, 0, w, h);
-    x.fillStyle = "#d42a1f"; for (let i = -2; i < 10; i++) { x.beginPath(); x.moveTo(i * 32, h); x.lineTo(i * 32 + 16, h); x.lineTo(i * 32 + 32 + 16, 0); x.lineTo(i * 32 + 32, 0); x.fill(); }
-  });
-  wallTex.wrapS = THREE.RepeatWrapping; wallTex.repeat.set(4, 1);
-  const crateMat = new THREE.MeshStandardMaterial({ map: crateTex, roughness: 0.85 });
-  const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.7 });
-  const crateGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-  game.crateGeo = crateGeo; game.crateMat = crateMat;
-  const canMat = new THREE.MeshStandardMaterial({ color: 0x0b2a33, emissive: 0x57d9ff, emissiveIntensity: 2.4, metalness: 0.4, roughness: 0.3 });
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0xdde4ee, metalness: 1, roughness: 0.2 });
-  const R = (() => { let s = 1234567; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
-  const addCan = (x, y, z) => {
-    const g = new THREE.Group(); g.position.set(x, y, z);
-    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.72, 20), canMat));
-    for (const yy of [-0.3, 0.3]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.04, 8, 24), ringMat); r.rotation.x = Math.PI / 2; r.position.y = yy; g.add(r); }
-    course.add(g); game.cans.push({ g, x, y, z, got: false });
+  const stripes = (a, b) => canvasTex(256, 64, (x, w, h) => { x.fillStyle = a; x.fillRect(0, 0, w, h); x.fillStyle = b; for (let i = -2; i < 10; i++) { x.beginPath(); x.moveTo(i * 32, h); x.lineTo(i * 32 + 16, h); x.lineTo(i * 32 + 48, 0); x.lineTo(i * 32 + 32, 0); x.fill(); } });
+  const wall = stripes("#e9ebee", "#d42a1f"); wall.wrapS = THREE.RepeatWrapping; wall.repeat.set(4, 1);
+  const ramp = stripes("#1d2128", "#f2c230"); ramp.wrapS = ramp.wrapT = THREE.RepeatWrapping; ramp.repeat.set(1, 3);
+  return {
+    crate: new THREE.MeshStandardMaterial({ map: crate, roughness: 0.85 }), crateGeo: new THREE.BoxGeometry(1.2, 1.2, 1.2),
+    wall: new THREE.MeshStandardMaterial({ map: wall, roughness: 0.7 }),
+    rampTop: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.8 }), rampSide: new THREE.MeshStandardMaterial({ map: ramp, roughness: 0.7 }),
+    can: new THREE.MeshStandardMaterial({ color: 0x0b2a33, emissive: 0x57d9ff, emissiveIntensity: 2.4, metalness: 0.4, roughness: 0.3 }),
+    ring: new THREE.MeshStandardMaterial({ color: 0xdde4ee, metalness: 1, roughness: 0.2 }),
   };
-  // obstacles every ~32 m: crate stacks (bust them at speed or fly over) and striped walls (fly over)
-  let x = 34, i = 0;
-  while (x < FINISH_X - 25) {
-    const type = ["crates", "wall", "crates", "crates", "wall"][i % 5];
-    if (type === "crates") {
-      const g = new THREE.Group(); g.position.set(x, 0, 0);
-      for (let row = 0; row < 2; row++) for (let k = 0; k < 7; k++) { const m = new THREE.Mesh(crateGeo, crateMat); m.position.set(0.6, 0.6 + row * 1.2, -3.6 + k * 1.2); m.rotation.y = (R() - 0.5) * 0.08; g.add(m); }
-      g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-      course.add(g);
-      game.boxes.push({ id: "crates" + i, kind: "crates", g, x0: x, x1: x + 1.2, y0: 0, y1: 2.4, z0: -4.2, z1: 4.2, bust: true });
-      addCan(x + 5, 0.95, (R() - 0.5) * 3);                       // a reward right behind the crates for busting through
-    } else {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2.4, 16), wallMat); m.position.set(x + 0.5, 1.2, 0); m.castShadow = m.receiveShadow = true;
-      course.add(m);
-      game.boxes.push({ id: "wall" + i, kind: "wall", g: m, x0: x, x1: x + 1, y0: 0, y1: 2.4, z0: -8, z1: 8 });
-      addCan(x + 0.5, 4.3, (R() - 0.5) * 2);                      // only reachable by flying over
+})();
+function buildCourse(seed) {
+  for (const o of [...obstacles.children]) { obstacles.remove(o); o.traverse(m => { if (m.isMesh && m.geometry !== MAT.crateGeo) m.geometry.dispose(); }); }
+  game.boxes = []; game.cans = []; game.seed = seed;
+  let s = seed; const R = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const can = (x, y, z) => {
+    const g = new THREE.Group(); g.position.set(x, y, z);
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.72, 20), MAT.can));
+    for (const yy of [-0.3, 0.3]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.04, 8, 24), MAT.ring); r.rotation.x = Math.PI / 2; r.position.y = yy; g.add(r); }
+    obstacles.add(g); game.cans.push({ g, x, y, z, got: false });
+  };
+  const crates = (x, n, z0) => {
+    const g = new THREE.Group(); g.position.set(x, 0, 0);
+    for (let row = 0; row < 2; row++) for (let k = 0; k < n; k++) { const m = new THREE.Mesh(MAT.crateGeo, MAT.crate); m.position.set(0.6, 0.6 + row * 1.2, z0 + 0.6 + k * 1.2); m.rotation.y = (R() - 0.5) * 0.08; m.castShadow = m.receiveShadow = true; g.add(m); }
+    obstacles.add(g); game.boxes.push({ id: "crates@" + x.toFixed(0), kind: "crates", g, x0: x, x1: x + 1.2, y0: 0, y1: 2.4, z0, z1: z0 + n * 1.2, bust: true });
+  };
+  const wall = x => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2.4, 16), MAT.wall); m.position.set(x + 0.5, 1.2, 0); m.castShadow = m.receiveShadow = true;
+    obstacles.add(m); game.boxes.push({ id: "wall@" + x.toFixed(0), kind: "wall", g: m, x0: x, x1: x + 1, y0: 0, y1: 2.4, z0: -8, z1: 8 });
+  };
+  const ramp = (x, L, h, w) => {   // a wedge: sloped top, striped sides, open back
+    const sh = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(L, 0), new THREE.Vector2(L, h)]);
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: w * 2, bevelEnabled: false }).translate(0, 0, -w);
+    const m = new THREE.Mesh(geo, [MAT.rampSide, MAT.rampTop]); m.position.set(x, 0, 0); m.castShadow = m.receiveShadow = true;
+    obstacles.add(m); game.boxes.push({ id: "ramp@" + x.toFixed(0), kind: "ramp", ramp: true, g: m, x0: x, x1: x + L, h, z0: -w, z1: w });
+  };
+  let x = 34, first = true;
+  while (x < FINISH_X - 30) {
+    let r = R(); if (first && r >= 0.66 && r < 0.86) r = 0.5; first = false;   // never open with a ramp-wall: no run-up yet
+    if (r < 0.38) {                     // crate stack, sometimes off-centre so you can choose to dodge it
+      const n = 5 + Math.floor(R() * 3), z0 = -n * 0.6 + (R() - 0.5) * 3;
+      crates(x, n, z0); can(x + 5, 0.95, z0 + n * 0.6); x += 26 + R() * 10;
+    } else if (r < 0.66) {              // wall: fly over it; a fuel can floats above it
+      wall(x); can(x + 0.5, 4.3, (R() - 0.5) * 2); x += 34 + R() * 8;
+    } else if (r < 0.86) {              // kicker ramp straight into a wall: launch over it with no fuel
+      ramp(x, 7, 1.8, 3.2); wall(x + 16); can(x + 16.5, 4.6, 0); x += 46 + R() * 8;
+    } else {                            // kicker ramp with a can high in the air ahead
+      ramp(x, 6, 1.1, 3); can(x + 16, 3.6, 0); x += 34 + R() * 8;
     }
-    addCan(x + 16, 0.95, (R() - 0.5) * 4);
-    x += 28 + R() * 9; i++;
+    if (x < FINISH_X - 20) can(x - 10, 0.95, (R() - 0.5) * 4);
   }
-  // finish arch with a chequered banner
+  st.boxes = game.boxes;
+  gameCourse.textContent = "#" + seed % 10000;
+}
+// static parts of the course: finish arch, lane markings, cones, lamp posts
+{
   const chk = canvasTex(256, 32, (c, w, h) => { for (let a = 0; a < w / 16; a++) for (let b = 0; b < 2; b++) { c.fillStyle = (a + b) % 2 ? "#111" : "#f2f2f2"; c.fillRect(a * 16, b * 16, 16, 16); } });
   const post = new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.4 });
   for (const z of [-8.5, 8.5]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.35, 5.6, 0.35), post); p.position.set(FINISH_X, 2.8, z); course.add(p); }
@@ -1221,7 +1283,6 @@ const game = { boxes: [], cans: [], debris: [], started: false, finished: false,
   banner.position.set(FINISH_X, 5, 0); banner.rotation.y = Math.PI / 2; course.add(banner);
   const line = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 16).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: chk, roughness: 0.8 }));
   line.position.set(FINISH_X, 0.01, 0); course.add(line);
-  // lane markings, cones and lamp posts the length of the course
   const paint = new THREE.MeshStandardMaterial({ color: 0xd9dde4, roughness: 0.7 }), m4 = new THREE.Matrix4();
   const dashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(1.8, 0.14).rotateX(-Math.PI / 2), paint, 220); let k = 0;
   for (let xx = 0; xx < FINISH_X + 20 && k < 220; xx += 3.4) for (const z of [-3.6, 3.6]) { if (k < 220) { m4.makeTranslation(xx, 0.006, z); dashes.setMatrixAt(k++, m4); } }
@@ -1243,11 +1304,12 @@ scene.add(followLight, followLight.target);
 const headlight = new THREE.SpotLight(0xf4f8ff, 420, 0, 0.5, 0.55, 2); headlight.visible = false;
 headlight.position.set(2.2, 0.5, 0); headlight.target.position.set(14, -0.4, 0); body.add(headlight, headlight.target);
 
-function gameReset() {
+function gameReset(newLayout) {
+  if (newLayout || !game.seed) buildCourse(1 + Math.floor(Math.random() * 2147483000));
   for (const b of game.boxes) { b.gone = false; b.hitT = 0; b.g.visible = true; }
   for (const c of game.cans) { c.got = false; c.g.visible = true; }
   for (const d of game.debris) course.remove(d.m); game.debris = [];
-  Object.assign(game, { started: false, finished: false, t: 0, busts: 0, cansGot: 0, best: 0 });
+  Object.assign(game, { started: false, over: false, t: 0, busts: 0, cansGot: 0, crashes: 0, best: 0, shake: 0 });
   st.boxes = game.boxes; gameOver.hidden = true; toast("Gas to start");
 }
 function toast(text) { gameToast.textContent = text; gameToast.classList.add("show"); game.toastT = 1.6; }
@@ -1258,20 +1320,40 @@ function chime(f0) {
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
   o.connect(g); g.connect(snd.master); o.start(t); o.stop(t + 0.4);
 }
+const score = () => Math.max(0, Math.round(Math.max(0, game.best) + game.busts * 100 + game.cansGot * 25 - game.crashes * 200));
 function gameBust(b, v) {
   if (st.scn !== "drive") return;
-  b.g.visible = false; game.busts++; toast(`Busted at ${Math.round(v * 3.6)} km/h · +100`);
+  b.g.visible = false; game.busts++; toast(`Busted at ${Math.round(v * 3.6)} km/h · +100`); game.shake = 0.25;
   if (snd.on) { snd.thump(0.9); snd.burst(0.5, "bandpass", 900, 0.6); }
   for (const c of b.g.children) {   // the stack bursts into its crates
-    const m = new THREE.Mesh(game.crateGeo, game.crateMat); c.getWorldPosition(m.position); m.castShadow = true; course.add(m);
+    const m = new THREE.Mesh(MAT.crateGeo, MAT.crate); c.getWorldPosition(m.position); m.castShadow = true; course.add(m);
     game.debris.push({ m, v: new THREE.Vector3(v * (0.5 + Math.random() * 0.6), 2 + Math.random() * 5, (m.position.z - st.pos.z) * 0.9 + (Math.random() - 0.5) * 4),
       w: new THREE.Vector3(Math.random() * 8 - 4, Math.random() * 8 - 4, Math.random() * 8 - 4), life: 5 });
   }
 }
 function gameHit(b, v) {
-  if (st.scn !== "drive") return;
+  if (st.scn !== "drive" || game.over) return;
+  if (b.kind === "wall" && v > CRASH_SPEED) {   // a crash: costs fuel and points; three wreck the car
+    game.crashes++; game.shake = 0.6; st.fuel = Math.max(0, st.fuel - 15);
+    if (snd.on) { snd.thump(1); snd.burst(0.6, "lowpass", 700, 0.9); snd.burst(0.3, "highpass", 3000, 0.4); }
+    if (game.crashes >= MAX_CRASHES) endRun(false); else toast(`Crash at ${Math.round(v * 3.6)} km/h · ${MAX_CRASHES - game.crashes} left`);
+    return;
+  }
   toast(b.kind === "wall" ? "Walls don't bust · fly over with Space" : `Too slow to bust (${Math.round(v * 3.6)} km/h) · go 45+`);
   if (snd.on) snd.thump(Math.min(1, v / 10));
+}
+function endRun(finished) {
+  game.over = true;
+  const sc = score() + (finished ? Math.max(0, Math.round((60 - game.t) * 10)) : 0);
+  let fresh = false;
+  if (finished && (!bestRec.time || game.t < bestRec.time)) { bestRec.time = game.t; fresh = true; }
+  if (finished && (!bestRec.score || sc > bestRec.score)) { bestRec.score = sc; fresh = true; }
+  if (fresh) store.set(bestRec);
+  goTitle.textContent = finished ? "Finish" : "Wrecked";
+  goScore.textContent = sc; goTime.textContent = finished ? game.t.toFixed(1) + " s" : "—"; goBusts.textContent = game.busts; goCans.textContent = game.cansGot;
+  goBest.textContent = bestRec.time ? `${bestRec.time.toFixed(1)} s · ${bestRec.score} pts` : "—"; goNew.hidden = !fresh;
+  gameOver.hidden = false;
+  toast(finished ? "Finish!" : "Wrecked"); if (finished) { chime(520); setTimeout(() => chime(780), 140); }
 }
 const keys = {};
 const KEYMAP = { KeyW: "gas", ArrowUp: "gas", KeyS: "brake", ArrowDown: "brake", KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", Space: "jet", ShiftLeft: "boost", ShiftRight: "boost" };
@@ -1293,15 +1375,16 @@ function resetUpright() {   // R: put the car back on its wheels where it is, ke
   st.pos.y = Math.max(st.pos.y, COM + 0.3); st.roll = st.pitch = 0; toast("Reset");
 }
 function gameInput() {
-  const inp = st.input, go = !game.finished;
-  inp.throttle = go ? (keys.gas ? 1 : 0) - (keys.brake ? 1 : 0) : -1;
+  const inp = st.input, go = !game.over;
+  inp.throttle = go ? (keys.gas ? 1 : 0) - (keys.brake ? 1 : 0) : (st.vel.x > 0.5 ? -1 : 0);   // after the run: brake to a stop, never reverse
   inp.steer = go ? (keys.right ? 1 : 0) - (keys.left ? 1 : 0) : 0;
   inp.jet = go && !!keys.jet; inp.boost = go && !!keys.boost;
   if (!game.started && go && (inp.throttle > 0 || inp.jet || inp.boost)) { game.started = true; toast("Go! Bust crates, fly over walls"); }
 }
 function gameUpdate(dt) {
-  if (game.started && !game.finished) game.t += dt;
+  if (game.started && !game.over) game.t += dt;
   game.best = Math.max(game.best, st.pos.x);
+  game.shake = Math.max(0, game.shake - dt);
   for (const c of game.cans) {   // fuel canisters spin, bob and get picked up
     if (c.got) continue;
     c.g.rotation.y += dt * 2; c.g.position.y = c.y + Math.sin(st.t * 3 + c.x) * 0.12;
@@ -1313,17 +1396,15 @@ function gameUpdate(dt) {
     if (d.m.position.y < 0.6) { d.m.position.y = 0.6; d.v.y *= -0.3; d.v.x *= 0.7; d.v.z *= 0.7; d.w.multiplyScalar(0.7); }
     if ((d.life -= dt) < 0) { course.remove(d.m); game.debris.splice(i, 1); }
   }
-  if (!game.finished && st.pos.x >= FINISH_X) {
-    game.finished = true;
-    const score = Math.round(FINISH_X + game.busts * 100 + game.cansGot * 25 + Math.max(0, 60 - game.t) * 10);
-    goScore.textContent = score; goTime.textContent = game.t.toFixed(1) + " s"; goBusts.textContent = game.busts; goCans.textContent = game.cansGot;
-    gameOver.hidden = false; toast("Finish!"); chime(520); setTimeout(() => chime(780), 140);
-  }
+  if (!game.over && st.pos.x >= FINISH_X) endRun(true);
   if ((game.toastT -= dt) < 0) gameToast.classList.remove("show");
   fuelBar.style.width = st.fuel.toFixed(1) + "%"; fuelBar.classList.toggle("low", st.fuel < 20);
   fuelNum.textContent = Math.round(st.fuel);
-  gameScore.textContent = Math.round(Math.max(0, game.best) + game.busts * 100 + game.cansGot * 25);
+  gameScore.textContent = score();
   gameLeft.textContent = Math.max(0, Math.round(FINISH_X - st.pos.x)) + " m";
+  gameTime.textContent = game.t.toFixed(1) + " s";
+  gameBest.textContent = bestRec.time ? bestRec.time.toFixed(1) + " s" : "—";
+  gameDamage.textContent = "●".repeat(game.crashes) + "○".repeat(MAX_CRASHES - game.crashes);
   followLight.position.set(st.pos.x - 8, 20, st.pos.z + 10); followLight.target.position.copy(st.pos);
 }
 
@@ -1372,7 +1453,7 @@ function updateParts(dt) {
 }
 
 /* ---------- the run: physics drives the car, the gas and the HUD ---------- */
-const sim = makeRoadsterSim(THREE, { WR, COM, XW, TRACK_Z, X_TAKE: -10, nozzles: NOZ, ramp: RAMP, onBust: gameBust, onHit: gameHit });
+const sim = makeRoadsterSim(THREE, { WR, COM, XW, TRACK_Z, X_TAKE: -10, nozzles: NOZ, ramp: RAMP, onBust: gameBust, onHit: gameHit, onRecover: () => { if (st.scn === "drive") toast("Back on your wheels"); } });
 const st = sim.st;
 const WING_MODES = ["Road", "High-Downforce", "Low-Drag"];
 function updateWing(dt) {
@@ -1404,7 +1485,7 @@ function setStunt(scn) {
   lineup.visible = scn === "jump"; rampGroup.visible = scn === "ramp";
   const drv = scn === "drive";
   course.visible = followLight.visible = headlight.visible = drv; gameUI.hidden = !drv; stage.classList.toggle("driving", drv);
-  st.boxes = []; if (drv) { gameReset(); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } canvas.focus({ preventScroll: true }); }
+  st.boxes = []; if (drv) { gameReset(false); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } canvas.focus({ preventScroll: true }); }
   for (const b of stuntBtns) b.setAttribute("aria-selected", String(b.dataset.stunt === scn));
   if (!playing) { simulate(1 / 60); updateCamera(0); }
   dirty = true;
@@ -1487,6 +1568,7 @@ function updateCamera(dt) {
   if (snapCam) { camPos.copy(wantPos); camLook.copy(wantLook); snapCam = false; }
   else { const k = 1 - Math.exp(-dt * (st.scn === "drive" ? 5 : 2.4)); camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); }
   camera.position.copy(camPos); camera.lookAt(camLook);
+  if (st.scn === "drive" && game.shake > 0) camera.position.add(_cf.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(game.shake * 0.9));
 }
 
 /* ---------- sound: synthesised live from the simulation (no audio files) ---------- */
@@ -1591,7 +1673,7 @@ new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stag
 
 /* ---------- controls ---------- */
 pauseBtn.addEventListener("click", () => { playing = !playing; pauseBtn.textContent = playing ? "Pause" : "Play"; });
-replayBtn.addEventListener("click", () => { restart(st.scn); if (st.scn === "drive") { gameReset(); st.boxes = game.boxes; } simulate(0); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } });
+replayBtn.addEventListener("click", () => { restart(st.scn); if (st.scn === "drive") gameReset(false); simulate(0); if (!playing) { playing = true; pauseBtn.textContent = "Pause"; } });
 camBtn.addEventListener("click", () => setFree(!free));
 soundBtn.addEventListener("click", () => setSound(!snd.on));
 for (const b of stuntBtns) b.addEventListener("click", () => setStunt(b.dataset.stunt));

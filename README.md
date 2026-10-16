@@ -22,10 +22,16 @@ down on its jets, settles at the foot of the ramp and drives away.
 
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
-**Drive it.** Your turn. Drive a 330 m night course: bust through crate stacks at 45 km/h or more, fly over the
-striped walls on the jets, and grab glowing fuel canisters (some only reachable in the air). The jets burn fuel;
-the tanks also refill slowly while you drive. Score is distance plus 100 per crate stack busted, 25 per canister and
-a time bonus.
+**Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one):
+
+- **Crate stacks**: bust through at 45 km/h or more, or fly over.
+- **Striped walls**: fly over them on the jets, or hit a **yellow kicker ramp** fast and launch over with no fuel.
+  Hit a wall above 35 km/h and it is a crash; three crashes wreck the car.
+- **Fuel canisters**: the jets burn fuel; canisters refill it (some only reachable in the air), and the tanks
+  recompress slowly on the ground.
+- **Clock and record**: a live timer, with your best time and score kept in your browser.
+
+Score is distance plus 100 per crate stack, 25 per canister, minus 200 per crash, plus a time bonus at the finish.
 
 ![Drive it](docs/drive-it.png)
 
@@ -48,7 +54,7 @@ Driving (Drive it):
 | `A` `D` / `←` `→` | ◀ ▶ | Steer (front wheels on the ground, nose jets in the air) |
 | `Space` | Jets | Floor jets: climb to a hover about 4.5 m up and hold it |
 | `Shift` | Boost | Rear jets |
-| `R` | | Put the car back on its wheels |
+| `R` | | Put the car back on its wheels (it also rights itself if stuck upside down) |
 
 Controls in the 3D view:
 
@@ -73,7 +79,9 @@ Everything runs at a fixed 240 Hz in the browser:
 - **Aero.** Drag, plus downforce that depends on the wing mode.
 - **Player control (Drive it).** Throttle and brake through the tyres, front-wheel steering with less lock at speed,
   jets that hold the car level with a quaternion attitude controller and a height hold, and solid obstacle boxes:
-  the hull collides with them, wheels can land on top of them, and crates give way above 12.5 m/s.
+  the hull collides with them, wheels can land on top of them and drive up kicker ramps, crates give way above
+  12.5 m/s, and a solid hit is an impact (the speed into the obstacle goes at once) so nothing can tunnel through a
+  wall. An in-air stability assist keeps the car level after a ramp launch.
 - **Flight computer.** The car was remote-operated on the night; here a controller flies each stunt phase by phase:
   roll profiles, a quaternion attitude hold, heading hold with the nose jets, sideways drift cancelling, a landing glide path and a
   hover descent.
