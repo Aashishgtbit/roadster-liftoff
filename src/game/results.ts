@@ -1,6 +1,6 @@
 // The card at the end of a run: a success or fail header, the score counting up with a breakdown of how it was
 // earned, a few stat tiles, a tip after a failed attempt, and two actions. Frosted glass over the live scene.
-import { buttons } from "../ui/dom";
+import { buttons, canvas } from "../ui/dom";
 import { svg } from "../ui/gauges";
 import { gameUI, resultsCard } from "./ui";
 import type { Stat } from "./ui";
@@ -108,9 +108,15 @@ export function showResults(r: Results) {
   resultsCard.primary = primary;
   resultsCard.root.hidden = false;
   gameUI.root.classList.add("over");
+  // the main action takes the focus: Enter (or Space) runs it straight away
+  primary.focus({ preventScroll: true });
 }
 
-export function hideResults() { resultsCard.root.hidden = true; }
+export function hideResults() {
+  const hadFocus = resultsCard.root.contains(document.activeElement);
+  resultsCard.root.hidden = true;
+  if (hadFocus) canvas.focus({ preventScroll: true });   // back to the game, so its keys work again
+}
 
 let pending = 0;
 /** Show the card after the end-of-run moment (banner, flash, confetti) has played. */

@@ -186,3 +186,8 @@
 @keyframes g-banner-in { from { opacity: 0; transform: translate(-50%, -50%) scale(.55); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 @keyframes g-shake { 20% { margin-left: -12px; } 40% { margin-left: 10px; } 60% { margin-left: -7px; } 80% { margin-left: 4px; } }
 @media (prefers-reduced-motion: reduce) { .g-banner.show, .g-banner.bad.show, .g-flash.show { animation-duration: .01s; } .g-banner.show { opacity: 1; } }
+
+/* the results card's main action has the focus: a bright ring and a slow pulse say "press Enter" */
+.g-btns .btn.primary:focus, .g-btns .btn.primary:focus-visible { outline: 2px solid #fff; outline-offset: 3px; animation: g-ready 1.4s ease-in-out .4s infinite; }
+@keyframes g-ready { 50% { box-shadow: 0 0 0 6px rgba(227,52,43,.28), 0 8px 26px rgba(227,52,43,.55); } }
+@media (prefers-reduced-motion: reduce) { .g-btns .btn.primary:focus { animation: none; } }
