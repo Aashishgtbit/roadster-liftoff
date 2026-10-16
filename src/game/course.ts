@@ -1,7 +1,7 @@
 // Drive it: the course in 3D. Obstacles and fuel canisters from a random layout (layout.ts), plus the fixed scenery:
-// barriers with catch fences, grandstands, the finish arch, lane markings and the course lights.
+// barriers, grandstands, the finish arch, lane markings and the course lights.
 import * as THREE from "three";
-import { BARRIERS, END_WALL_X, FENCE_TOP, FINISH_X, START_WALL_X, TRACK_HALF_WIDTH } from "../config";
+import { BARRIERS, END_WALL_X, FINISH_X, START_WALL_X, TRACK_HALF_WIDTH } from "../config";
 import { canvasTexture, scene } from "../core/renderer";
 import { body } from "../car/roadster";
 import type { Obstacle } from "../physics/types";
@@ -107,7 +107,8 @@ export function buildCourse(seed: number): BuiltCourse {
   return built;
 }
 
-// ---------- the boundary: concrete barriers with catch fences down both sides and across both ends ----------
+// ---------- the boundary: concrete barriers down both sides and walls across both ends ----------
+// (the physics extends them upward, unseen, so the car cannot fly out over them: see BARRIERS in config.ts)
 {
   const length = END_WALL_X - START_WALL_X, midX = START_WALL_X + length / 2, BARRIER_HEIGHT = 1.05, sideZ = TRACK_HALF_WIDTH + 0.4;
   const concrete = canvasTexture(512, 64, (ctx, w, h) => {
@@ -131,31 +132,7 @@ export function buildCourse(seed: number): BuiltCourse {
     wall.position.set(x, 1.1, 0); course.add(wall);
   }
 
-  // catch fences: wire mesh on posts, up to the same height the physics uses, so what you see is what stops you
-  const wire = canvasTexture(128, 128, (ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h); ctx.strokeStyle = "rgba(205,214,228,0.85)"; ctx.lineWidth = 2.2;
-    for (let k = -w; k < w * 2; k += 16) {
-      ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k + h, h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(k + h, 0); ctx.lineTo(k, h); ctx.stroke();
-    }
-  });
-  wire.wrapS = wire.wrapT = THREE.RepeatWrapping;
-  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.4 });
-  const fenceHeight = FENCE_TOP - BARRIER_HEIGHT, fenceY = BARRIER_HEIGHT + fenceHeight / 2;
-  const fence = (span: number, x: number, z: number, rotationY: number) => {
-    const texture = wire.clone(); texture.needsUpdate = true; texture.repeat.set(span / 1.6, fenceHeight / 1.6);
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(span, fenceHeight),
-      new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide, opacity: 0.55 }));
-    panel.position.set(x, fenceY, z); panel.rotation.y = rotationY; course.add(panel);
-  };
-  const POST_SPACING = 6, matrix = new THREE.Matrix4();
-  for (const side of [-1, 1]) {
-    fence(length, midX, side * sideZ, 0);
-    const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, fenceHeight, 0.12), postMaterial, Math.ceil(length / POST_SPACING) + 1);
-    for (let k = 0; k <= length / POST_SPACING; k++) { matrix.makeTranslation(START_WALL_X + k * POST_SPACING, fenceY, side * sideZ); posts.setMatrixAt(k, matrix); }
-    course.add(posts);
-  }
-  for (const x of endWallXs) fence(2 * TRACK_HALF_WIDTH + 1.6, x, 0, Math.PI / 2);
+  const matrix = new THREE.Matrix4();
 
   // grandstands with crowd lights beyond the barriers, so the view never runs into empty dark
   const standMaterial = new THREE.MeshStandardMaterial({ color: 0x1a2030, roughness: 0.9 }), crowdMaterial = new THREE.MeshBasicMaterial({ color: 0xffe7b8 });

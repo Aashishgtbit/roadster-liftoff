@@ -23,7 +23,7 @@ down on its jets, settles at the foot of the ramp and drives away.
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
 **Drive it.** Your turn. Every run gets a new random 330 m night course (or retry the same one), boxed in by
-concrete barriers and catch fences you can scrape along (but not fly over), with grandstands beyond:
+concrete barriers you can scrape along (but not fly out over), with grandstands beyond:
 
 - **Crate stacks**: bust through at 45 km/h or more, or fly over.
 - **Striped walls**: fly over them on the jets, or hit a **yellow kicker ramp** fast and launch over with no fuel.
@@ -130,7 +130,7 @@ scaled by the touchdown speed. Volume and stereo pan follow the camera.
 `npm test` runs the real physics module with the car's real nozzle layout, headlessly, and checks every outcome:
 lineup clearance, apex, a full roll, landing speeds, drift, hang height, the ramp stunt's x-axis flip and landing
 heading, crate busting, flying over walls, kicker-ramp launches, that a fast wall hit cannot tunnel through, and
-that the barriers and catch fences keep the car on the track. It also checks that every random course layout is
+that the boundaries keep the car on the track. It also checks that every random course layout is
 fair: nothing outside the track, never a ramp into a wall first, and room to land between obstacles.
 
 ## Publish with GitHub Pages

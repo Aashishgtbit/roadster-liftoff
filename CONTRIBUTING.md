@@ -37,7 +37,7 @@ places the camera, `updateSound()` sets the synth levels and `composer.render()`
 | Folder | What it does |
 | --- | --- |
 | `src/physics/` | The simulation. **Pure**: no DOM and no scene objects (three.js only for `Vector3` and `Quaternion`), so the tests run it directly. `simulation.ts` integrates forces and collisions, `flight-computer.ts` decides how hard each nozzle fires (each stunt is a list of phases), `contacts.ts` finds where the wheels touch, `constants.ts` holds every tuning number, `types.ts` the shared types. |
-| `src/config.ts` | Constants shared by the physics, the visuals and the tests: car dimensions, the ramp's shape, course size and the barrier/fence boundaries. |
+| `src/config.ts` | Constants shared by the physics, the visuals and the tests: car dimensions, the ramp's shape, course size and the track boundaries. |
 | `src/car/` | The Roadster model. `geometry.ts` holds the measured cross-sections and lofting, `materials.ts` the materials, `nozzle-layout.ts` where the ten nozzles sit (shared with the physics), `roadster.ts` the assembly and the wing animation. |
 | `src/stunts/` | Scenery for the scripted stunts: the parked lineup and the curved ramp. |
 | `src/game/` | Drive it. `layout.ts` generates random courses (pure, tested), `course.ts` builds them in 3D with the fixed scenery, `game.ts` holds rules, scoring and input, `records.ts` the saved best, `ui.ts` the element handles. |

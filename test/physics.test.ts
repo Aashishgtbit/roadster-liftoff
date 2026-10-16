@@ -132,7 +132,7 @@ describe("drive: crates, walls and the jets", () => {
   });
 });
 
-describe("drive: the barriers and catch fences keep the car on the track", () => {
+describe("drive: the boundaries keep the car on the track", () => {
   const attempts: [string, (step: number) => Partial<DriverInput>][] = [
     ["steering hard into a barrier", i => ({ throttle: 1, steer: i > 480 ? 1 : 0, jets: false })],
     ["pushing along a barrier", i => ({ throttle: 1, steer: i > 720 ? 0.35 : 0, jets: false })],

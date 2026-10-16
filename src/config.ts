@@ -24,20 +24,20 @@ export const RAMP: RampShape = { startX: 4, radius: 7.2, endAngle: 0.9 * Math.PI
 // The lineup jump lifts off here, just before the first parked car.
 export const TAKEOFF_X = -10;
 
-// Drive it: the course runs from x = 0 to the finish, inside concrete barriers topped with catch fences.
-// The boundary boxes are tall (above the jets' hover ceiling) and thick, so the car can neither fly over nor
-// push through them.
+// Drive it: the course runs from x = 0 to the finish, inside concrete barriers. For the physics the boundary is
+// taller than the barriers you see (above the jets' hover height) and thick, so the car can neither fly out over the
+// barriers nor push through them.
 export const FINISH_X = 330;            // finish line
 export const RUNOFF = 70;               // run-off past the finish before the end wall
 export const START_WALL_X = -40;        // the wall behind the start
 export const END_WALL_X = FINISH_X + RUNOFF;
 export const TRACK_HALF_WIDTH = 9.6;    // half-width between the barriers
-export const FENCE_TOP = 8;             // top of the catch fences
+export const BOUNDARY_HEIGHT = 8;       // how high the (invisible) boundary reaches
 const DEPTH = 30;                       // how far the boundary volumes extend outward
 const OUTER_Z = TRACK_HALF_WIDTH + DEPTH;
 export const BARRIERS: readonly BoxObstacle[] = [
-  { id: "barrier-left", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: END_WALL_X + DEPTH, minY: 0, maxY: FENCE_TOP, minZ: -OUTER_Z, maxZ: -TRACK_HALF_WIDTH },
-  { id: "barrier-right", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: END_WALL_X + DEPTH, minY: 0, maxY: FENCE_TOP, minZ: TRACK_HALF_WIDTH, maxZ: OUTER_Z },
-  { id: "barrier-start", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: START_WALL_X, minY: 0, maxY: FENCE_TOP, minZ: -OUTER_Z, maxZ: OUTER_Z },
-  { id: "barrier-end", kind: "barrier", minX: END_WALL_X, maxX: END_WALL_X + DEPTH, minY: 0, maxY: FENCE_TOP, minZ: -OUTER_Z, maxZ: OUTER_Z },
+  { id: "barrier-left", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: END_WALL_X + DEPTH, minY: 0, maxY: BOUNDARY_HEIGHT, minZ: -OUTER_Z, maxZ: -TRACK_HALF_WIDTH },
+  { id: "barrier-right", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: END_WALL_X + DEPTH, minY: 0, maxY: BOUNDARY_HEIGHT, minZ: TRACK_HALF_WIDTH, maxZ: OUTER_Z },
+  { id: "barrier-start", kind: "barrier", minX: START_WALL_X - DEPTH, maxX: START_WALL_X, minY: 0, maxY: BOUNDARY_HEIGHT, minZ: -OUTER_Z, maxZ: OUTER_Z },
+  { id: "barrier-end", kind: "barrier", minX: END_WALL_X, maxX: END_WALL_X + DEPTH, minY: 0, maxY: BOUNDARY_HEIGHT, minZ: -OUTER_Z, maxZ: OUTER_Z },
 ];
