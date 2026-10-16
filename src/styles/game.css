@@ -33,7 +33,7 @@
 .g-help { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; padding: 8px 14px 8px;
   background: rgba(9,13,24,.55); border: 1px solid var(--rule); border-radius: 16px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   transition: opacity .6s; max-width: calc(100% - 2 * var(--gutter)); }
-.game.seasoned .g-help { opacity: .45; }
+.game.seasoned .g-help { opacity: .3; }
 .g-help:hover { opacity: 1; }
 .keys { display: flex; gap: 18px; align-items: flex-end; }
 .key-group { display: grid; gap: 4px; justify-items: start; }

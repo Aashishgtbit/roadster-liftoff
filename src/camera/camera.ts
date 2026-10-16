@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { app } from "../core/state";
+import { clamp } from "../core/math";
 import { buttons, canvas, setLabel } from "../ui/dom";
 import { RAMP } from "../config";
 import { camera } from "../core/renderer";
@@ -17,17 +18,27 @@ const heading = new THREE.Vector3(), shake = new THREE.Vector3();
 function chooseShot() {
   const { x, y, z } = car.position;
   const player = carState.pilot === "player";
-  if (player && carState.scenario === "ramp" && x > RAMP.startX - 9) {   // playing the ramp: side on, framing car and wall
-    wantPosition.set(x + 1.5, Math.max(3, y * 0.75 + 2.5), 26); wantLookAt.set(x + 1, Math.max(2, y * 0.8 + 1), 0);
+  if (player && carState.scenario === "ramp" && x > RAMP.startX - 9) {
+    // playing the ramp: side on, leading the car. Camera and aim move ahead the way it is going, so the wall above,
+    // the lip, or the ground it is about to land on is in view in time to decide what to do
+    const v = carState.velocity, leadX = clamp(v.x * 0.9, -10, 10), leadY = clamp(v.y * 0.5, -5, 1.5);
+    wantPosition.set(x + 1.5 + leadX * 0.6, Math.max(3, y * 0.75 + 2.5 + leadY * 0.4), 30);
+    wantLookAt.set(x + 1 + leadX, Math.max(1.5, y * 0.8 + 1 + leadY), 0);
     return;
   }
-  if (player) {   // chase camera behind the car; a little wider over the lineup, so the cars stay in view
-    const wide = carState.scenario === "jump" ? 1.25 : 1;
-    heading.set(1, 0, 0).applyQuaternion(car.quaternion); heading.y = 0;
+  if (player) {
+    // chase camera: behind the car along its direction of travel (its nose when slow), looking down the path ahead.
+    // The faster it goes, the further ahead it aims and the wider the lens (see updateCamera), so walls and stacks
+    // come into view sooner while the car stays above the controls. A little wider over the lineup.
+    const wide = carState.scenario === "jump" ? 1.25 : 1, v = carState.velocity, speed = Math.hypot(v.x, v.z);
+    if (speed > 3) heading.set(v.x, 0, v.z);
+    else { heading.set(1, 0, 0).applyQuaternion(car.quaternion); heading.y = 0; }
     if (heading.lengthSq() < 0.01) heading.set(1, 0, 0);
     heading.normalize();
-    wantPosition.copy(car.position).addScaledVector(heading, -9.5 * wide); wantPosition.y = Math.max(2.6 * wide, y + 2.9 * wide);
-    wantLookAt.copy(car.position).addScaledVector(heading, 7); wantLookAt.y = y + 0.4;
+    const back = (9.5 + speed * 0.05) * wide, ahead = 8 + speed * 0.3, rise = (2.9 + speed * 0.02) * wide;
+    wantPosition.copy(car.position).addScaledVector(heading, -back); wantPosition.y = Math.max(2.6 * wide, y + rise);
+    // aim a little lower at speed, so the car stays above the control dock while the road ahead fills the view
+    wantLookAt.copy(car.position).addScaledVector(heading, ahead); wantLookAt.y = y - 0.4 - speed * 0.06;
     return;
   }
   if (carState.scenario === "ramp") {   // wide on the climb, low and close on the hang
@@ -83,6 +94,10 @@ export function updateCamera(dt: number) {
     return;
   }
   chooseShot();
+  // playing: the lens widens with speed (up to 8°), like a racing game, to show more of the way ahead
+  const baseFov = camera.aspect < 1.2 ? 42 : 32, v = carState.velocity;
+  const wantFov = baseFov + (carState.pilot === "player" ? clamp(Math.hypot(v.x, v.z) / 40, 0, 1) * 8 : 0);
+  if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov += (wantFov - camera.fov) * (app.snapCamera ? 1 : 1 - Math.exp(-dt * 2)); camera.updateProjectionMatrix(); }
   if (app.snapCamera) { position.copy(wantPosition); lookAt.copy(wantLookAt); app.snapCamera = false; }
   else {
     const ease = 1 - Math.exp(-dt * (carState.pilot === "player" ? 5 : 2.4));

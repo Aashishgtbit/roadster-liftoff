@@ -11,7 +11,7 @@ import { shakeCamera, showToast } from "./feedback";
 import { loadBest, saveBest } from "./records";
 import { showResultsSoon } from "./results";
 import { confetti, flashScreen, showBanner } from "./celebrate";
-import { setCheckpointState, setCheckpoints } from "../effects/checkpoints";
+import { markMilestone } from "./milestones";
 import { pushPoints, setScoreboard } from "./ui";
 
 const CRASH_SPEED = 9.7;   // m/s (35 km/h)
@@ -52,13 +52,6 @@ export function startDrive(newLayout: boolean, onRetry: (newLayout: boolean) => 
   for (const d of run.debris) course.remove(d.mesh);
   Object.assign(run, { debris: [], started: false, over: false, time: 0, busts: 0, cansCollected: 0, crashes: 0, flips: 0, furthest: 0 });
   carState.obstacles = built.obstacles;
-  // a ring over every wall and crate stack, and one standing across the finish
-  setCheckpoints([
-    ...built.obstacles.filter(o => o.kind === "wall" || o.kind === "crates").map(o => ({
-      id: o.id, x: (o.minX + o.maxX) / 2, y: (o.kind === "wall" || o.kind === "crates" ? o.maxY : 0) + 1.4, z: (o.minZ + o.maxZ) / 2, radius: 1, kind: "gate" as const,
-    })),
-    { id: "finish", x: FINISH_X, y: 3.2, z: 0, radius: 2.6, kind: "gate", facing: "along" },
-  ]);
   showToast("Gas to start");
 }
 
@@ -70,7 +63,7 @@ export function onDriveBust(stack: BoxObstacle, speed: number) {
   if (!mesh) return;
   mesh.visible = false;
   run.busts++;
-  setCheckpointState(stack.id, "cleared");
+  markMilestone(stack.id, "cleared");
   showBanner("Busted!", "good", `${kmh(speed)} km/h · +${POINTS.bust}`, 1.1);
   shakeCamera(0.25);
   showToast(`Busted at ${kmh(speed)} km/h`);
@@ -109,7 +102,7 @@ export function onDriveHit(obstacle: BoxObstacle, speed: number) {
   if (obstacle.kind === "wall" && speed > CRASH_SPEED) {   // a crash: costs fuel and points; three wreck the car
     run.crashes++;
     shakeCamera(0.6);
-    setCheckpointState(obstacle.id, "failed");
+    markMilestone(obstacle.id, "failed");
     flashScreen("bad");
     carState.fuel = Math.max(0, carState.fuel - 15);
     pushPoints("wall crash", POINTS.crash);
@@ -130,7 +123,6 @@ function endRun(finished: boolean) {
   if (finished && (!best.score || finalScore > best.score)) { best.score = finalScore; newBest = true; }
   if (newBest) saveBest("drive", best);
   const times = (n: number, what: string) => n === 1 ? what : `${what} × ${n}`;
-  setCheckpointState("finish", finished ? "cleared" : "failed");
   flashScreen(finished ? "good" : "bad");
   showBanner(finished ? "Finish!" : "Wrecked!", finished ? "good" : "bad", finished ? `${run.time.toFixed(1)} s` : "three wall crashes", 1.8);
   if (finished) confetti(); else shakeCamera(0.6);
@@ -181,7 +173,7 @@ export function updateDrive(dt: number) {
   }
   // walls and stacks the car gets past (over, around, or through) burst green
   for (const o of run.course?.obstacles ?? []) {
-    if ((o.kind === "wall" || o.kind === "crates") && carState.position.x > o.maxX + 1 && setCheckpointState(o.id, "cleared") && o.kind === "wall") showBanner("Cleared!", "good", "", 0.9);
+    if ((o.kind === "wall" || o.kind === "crates") && carState.position.x > o.maxX + 1 && markMilestone(o.id, "cleared") && o.kind === "wall") showBanner("Cleared!", "good", "", 0.9);
   }
   if (!run.over && carState.position.x >= FINISH_X) endRun(true);
   setScoreboard(score(), [

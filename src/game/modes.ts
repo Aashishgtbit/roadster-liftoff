@@ -2,7 +2,7 @@
 // has the controls, and Drive it or the stunt challenge keeps score. Routes the physics events to the active rules.
 import { app } from "../core/state";
 import { clearPlumes } from "../effects/plumes";
-import { clearCheckpoints, updateCheckpoints } from "../effects/checkpoints";
+import { resetMilestones } from "./milestones";
 import { clearMoments } from "./celebrate";
 import { carState, sim } from "../run/sim";
 import { playThump } from "../audio/sound";
@@ -35,7 +35,7 @@ export function restartRun(scenario: Scenario, pilot: Pilot) {
   sim.reset(scenario, pilot);
   carState.obstacles = scenario === "jump" ? lineupObstacles() : [];
   clearPlumes();
-  clearCheckpoints();
+  resetMilestones();
   clearMoments();
   app.snapCamera = true;
 }
@@ -62,7 +62,6 @@ export function applyPlayInput() {
 export function updatePlay(dt: number) {
   if (!isPlaying()) return;
   if (carState.scenario === "drive") updateDrive(dt); else updateStunt(dt);
-  updateCheckpoints(dt, carState.time);
   if (carState.wheelsOnGround > 0) rollOnGround = carState.rollAngle;
   else if (!flipHintShown && carState.airTime > 0.4) { flipHintShown = true; showToast("Q / E to flip in the air", 2.4); }
   setPanelSpeed(carState.velocity.length() * 3.6);
