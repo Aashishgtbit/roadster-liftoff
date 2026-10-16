@@ -284,9 +284,13 @@ function makeRoadsterSim(THREE, C) {
         const closing = -(st.vel.x * f[1] + st.vel.y * f[2] + st.vel.z * f[3]);
         if (b.bust && closing > BUST_SPEED) { b.gone = true; st.vel.multiplyScalar(0.88); C.onBust?.(b, closing); continue; }
         if (closing > 4 && !b.hitT) C.onHit?.(b, closing);
-        // an impact, not a spring: on first contact the speed into the obstacle goes at once (with a small bounce),
-        // so a fast car cannot tunnel through a 1 m wall between physics steps
-        if (closing > 2 && !b.hitT) { st.vel.x += f[1] * closing * 1.15; st.vel.y += f[2] * closing * 1.15; st.vel.z += f[3] * closing * 1.15; st.w.multiplyScalar(0.5); }
+        // an impact, not a spring: the speed into the obstacle goes at once (with a small bounce on a hard hit),
+        // so a fast car cannot tunnel through a wall between physics steps
+        if (closing > 0.5) {   // every contact, not just the first: no slowly grinding through a barrier
+          const e = closing > 2 && !b.hitT ? 1.15 : 1;
+          st.vel.x += f[1] * closing * e; st.vel.y += f[2] * closing * e; st.vel.z += f[3] * closing * e;
+          if (!b.hitT) st.w.multiplyScalar(0.5);
+        }
         b.hitT = 0.4;
         if (f[0] > pen) { pen = f[0]; nx = f[1]; ny = f[2]; nz = f[3]; }
       }

@@ -1,5 +1,6 @@
 // Drive it: the course — random obstacle layouts, barriers, grandstands, finish arch and course lights.
 import * as THREE from "three";
+import { BARRIERS, FENCE_TOP, FINISH_X, RUNOFF, TRACK_HW } from "../config.js";
 import { scene } from "../core/renderer.js";
 import { body } from "../car/roadster.js";
 import { st } from "../run/runner.js";
@@ -7,7 +8,7 @@ import { st } from "../run/runner.js";
 /* ---------- "Drive it": the player takes the wheel. Bust crates or fly over them, fly over walls, collect fuel ---------- */
 // Every run gets a new random layout (or retry the same one). Kicker ramps launch the car without fuel. Hitting a wall
 // above 35 km/h is a crash; three crashes wreck the car. Best time and score are remembered in this browser.
-const FINISH_X = 330, CRASH_SPEED = 9.7, MAX_CRASHES = 3;
+const CRASH_SPEED = 9.7, MAX_CRASHES = 3;
 const $ = id => document.getElementById(id);
 const gameUI = $("gameUI"), gameToast = $("gameToast"), gameOver = $("gameOver");
 const gameSpeed = $("gameSpeed"), fuelBar = $("fuelBar"), fuelNum = $("fuelNum"), gameScore = $("gameScore"), gameLeft = $("gameLeft"), gameTime = $("gameTime"), gameBest = $("gameBest"), gameCourse = $("gameCourse"), gameDamage = $("gameDamage");
@@ -80,14 +81,7 @@ function buildCourse(seed) {
   st.boxes = game.boxes;
   gameCourse.textContent = "#" + seed % 10000;
 }
-// the track is boxed in: concrete barriers down both sides, a wall behind the start and a run-off wall past the finish
-const TRACK_HW = 9.6, RUNOFF = 70;
-const BARRIERS = [
-  { id: "barrier-left", kind: "barrier", x0: -40, x1: FINISH_X + RUNOFF, y0: 0, y1: 1.05, z0: -TRACK_HW - 0.8, z1: -TRACK_HW },
-  { id: "barrier-right", kind: "barrier", x0: -40, x1: FINISH_X + RUNOFF, y0: 0, y1: 1.05, z0: TRACK_HW, z1: TRACK_HW + 0.8 },
-  { id: "barrier-start", kind: "barrier", x0: -41, x1: -40, y0: 0, y1: 2.2, z0: -TRACK_HW - 0.8, z1: TRACK_HW + 0.8 },
-  { id: "barrier-end", kind: "barrier", x0: FINISH_X + RUNOFF, x1: FINISH_X + RUNOFF + 1, y0: 0, y1: 2.2, z0: -TRACK_HW - 0.8, z1: TRACK_HW + 0.8 },
-];
+// the track is boxed in: concrete barriers with catch fences down both sides and across both ends (see config.js)
 {
   const concrete = canvasTex(512, 64, (x, w, h) => {
     x.fillStyle = "#b9bdc4"; x.fillRect(0, 0, w, h);
@@ -106,6 +100,27 @@ const BARRIERS = [
   for (const x of [-40.5, FINISH_X + RUNOFF + 0.5]) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(1, 2.2, 2 * TRACK_HW + 1.6), MAT.wall); m.position.set(x, 1.1, 0); m.castShadow = m.receiveShadow = true; course.add(m);
   }
+  // catch fences: wire mesh on posts, up to the same height the physics uses, so what you see is what stops you
+  const wire = canvasTex(128, 128, (x, w, h) => {
+    x.clearRect(0, 0, w, h); x.strokeStyle = "rgba(205,214,228,0.85)"; x.lineWidth = 2.2;
+    for (let k = -w; k < w * 2; k += 16) { x.beginPath(); x.moveTo(k, 0); x.lineTo(k + h, h); x.stroke(); x.beginPath(); x.moveTo(k + h, 0); x.lineTo(k, h); x.stroke(); }
+  });
+  wire.wrapS = wire.wrapT = THREE.RepeatWrapping;
+  const fenceMat = new THREE.MeshBasicMaterial({ map: wire, transparent: true, depthWrite: false, side: THREE.DoubleSide, opacity: 0.55 });
+  const postMat = new THREE.MeshStandardMaterial({ color: 0x2b3038, metalness: 0.7, roughness: 0.4 });
+  const fenceH = FENCE_TOP - 1.05, fenceY = 1.05 + fenceH / 2;
+  const fence = (len, x, z, rotY) => {
+    const t = wire.clone(); t.needsUpdate = true; t.repeat.set(len / 1.6, fenceH / 1.6);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(len, fenceH), fenceMat.clone()); m.material.map = t;
+    m.position.set(x, fenceY, z); m.rotation.y = rotY; course.add(m);
+  };
+  for (const s of [-1, 1]) {
+    fence(L, -40 + L / 2, s * (TRACK_HW + 0.4), 0);
+    const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.12, fenceH, 0.12), postMat, Math.ceil(L / 6) + 1), m4 = new THREE.Matrix4();
+    for (let k = 0; k <= L / 6; k++) { m4.makeTranslation(-40 + k * 6, fenceY, s * (TRACK_HW + 0.4)); posts.setMatrixAt(k, m4); }
+    course.add(posts);
+  }
+  for (const x of [-40.5, FINISH_X + RUNOFF + 0.5]) fence(2 * TRACK_HW + 1.6, x, 0, Math.PI / 2);
   // grandstands with crowd lights beyond the barriers, so the view never runs into empty dark
   const standMat = new THREE.MeshStandardMaterial({ color: 0x1a2030, roughness: 0.9 }), dots = new THREE.MeshBasicMaterial({ color: 0xffe7b8 });
   const dotGeo = new THREE.SphereGeometry(0.07, 6, 4);

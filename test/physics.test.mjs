@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import assert from "node:assert/strict";
 import { makeRoadsterSim } from "../src/physics/roadster-sim.js";
-import { WR, COM, XW, TRACK_Z, RAMP } from "../src/config.js";
+import { WR, COM, XW, TRACK_Z, RAMP, BARRIERS, TRACK_HW } from "../src/config.js";
 
 // the same nozzle layout the car model builds (src/car/roadster.js); the nose pair sits at about x = 2.2
 const V = THREE.Vector3, nozzles = [];
@@ -98,6 +98,21 @@ function check(name, fn) { try { fn(); console.log(`ok   ${name}`); } catch (e) 
   let fastest = 0;
   for (let i = 0; i < 10 / sim.DT; i++) { st.input.throttle = 1; st.input.jet = false; sim.substep(); fastest = Math.max(fastest, st.vel.x); }
   check(`drive: a ${Math.round(fastest * 3.6)} km/h wall hit stops the car in front of the wall`, () => { assert.ok(events.some(e => e.startsWith("hit wall"))); assert.ok(st.pos.x < wall.x0, `car at x ${st.pos.x.toFixed(2)}`); });
+}
+
+// drive mode: the barriers and catch fences keep the car on the track, whether it scrapes or tries to fly out
+{
+  const tries = [
+    ["steering hard into a barrier", i => ({ throttle: 1, steer: i > 480 ? 1 : 0, jet: false })],
+    ["pushing along a barrier", i => ({ throttle: 1, steer: i > 720 ? 0.35 : 0, jet: false })],
+    ["flying sideways over it on the jets", i => ({ throttle: 1, steer: i > 480 ? 1 : 0, jet: i > 600 })],
+  ];
+  for (const [name, ctl] of tries) {
+    sim.reset("drive"); st.boxes = BARRIERS.map(b => ({ ...b }));
+    let maxZ = 0;
+    for (let i = 0; i < 14 / sim.DT; i++) { Object.assign(st.input, ctl(i)); st.fuel = 100; sim.substep(); maxZ = Math.max(maxZ, Math.abs(st.pos.z)); }
+    check(`drive: stays on the track when ${name} (max |z| ${maxZ.toFixed(2)} of ${TRACK_HW})`, () => assert.ok(maxZ < TRACK_HW));
+  }
 }
 
 if (failures) { console.log(`\n${failures} check(s) failed`); process.exit(1); }

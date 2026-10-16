@@ -34,7 +34,7 @@ places the camera, `soundUpdate()` sets the synth levels and `composer.render()`
 | Folder | What it does |
 | --- | --- |
 | `src/physics/` | The simulation. **Pure**: no DOM, no three.js scene objects (three.js is passed in for vector maths). Everything that moves the car physically goes here, and the tests run it directly. |
-| `src/config.js` | Constants shared by the physics, the visuals and the tests (car dimensions, ramp geometry). |
+| `src/config.js` | Constants shared by the physics, the visuals and the tests (car dimensions, ramp geometry, course size and the barrier/fence boundaries). |
 | `src/car/` | The Roadster model. `geometry.js` holds the measured cross-sections and lofting, `materials.js` the materials, `roadster.js` the assembly, including the nozzle layout the physics uses. |
 | `src/stunts/` | Scenery for the scripted stunts: the parked lineup and the curved ramp. |
 | `src/game/` | Drive it. `course.js` builds random layouts, barriers and grandstands; `game.js` holds rules, scoring, input and the game HUD. |
