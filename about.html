@@ -4,172 +4,195 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Roadster Liftoff Story</title>
-<meta name="description" content="The Oct 15, 2026 Tesla Roadster unveiling: the demo, the trims, the timeline, what is still unproven, and how the 3D simulation works.">
+<meta name="description" content="The Oct 15, 2026 Tesla Roadster unveiling: what the car did, the trims, the timeline, what is still unproven, and how the 3D simulation works.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 </head>
-<body>
-<div class="wrap">
-  <nav class="topnav"><b>Roadster <em>Liftoff</em></b><a class="btn back" href="index.html">← Back to the 3D stunts</a></nav>
-  <div class="mast">
-    <span class="label live"><b>Fan page</b> · not affiliated with Tesla</span>
-    <span class="label">Oct 15, 2026 · SpaceX test site · McGregor, Texas</span>
-  </div>
+<body class="story">
 
-  <div class="hero">
-    <span class="label">Second-gen Roadster · unveiling night</span>
-    <h1>The Roadster<br><em>left the ground.</em></h1>
-    <p>After nearly nine years of delays, the new Roadster showed up at an outdoor demo, climbed a ramp on suction, hung upside down, then fired <strong>cold-gas thrusters</strong> to hop a lineup of cars and a semi-truck with a flip in the middle. Here is what happened, and what is still a promise.</p>
-    <a class="btn primary cta" href="index.html">Watch the stunts in 3D, or drive it yourself</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">Roadster <em>Liftoff</em></a>
+    <span class="topbar-note">Fan page · not affiliated with Tesla</span>
+    <a class="play-link" href="index.html">Play the stunts <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
   </div>
-</div>
-<div class="wrap">
-  <div class="figs">
-    <div class="fig"><span class="label">0–60 mph, claimed</span><span class="num">0.59<small>s</small></span><p>Tesla's figure for the top trim. No independent test yet.</p></div>
-    <div class="fig"><span class="label">Thruster nozzles</span><span class="num">10</span><p>Fed by what Musk called ultra high-pressure air tanks.</p></div>
-    <div class="fig"><span class="label">Trims</span><span class="num">3</span><p>Performance, Thrust and Rocket.</p></div>
-    <div class="fig"><span class="label">Since the 2017 reveal</span><span class="num">~9<small>yrs</small></span><p>Still no price and no production date.</p></div>
-  </div>
+</header>
 
-  <section class="block" id="night">
-    <header>
-      <span class="label">The demo</span>
-      <h2>The night, beat by beat</h2>
-      <p>There was no driver in the car for the stunts. Reports say it was operated remotely.</p>
-    </header>
-    <div class="body">
-      <ol class="beats">
-        <li><span class="t">1</span><div><h3>Up the ramp on suction</h3><p>Fans underneath pulled the car onto a steep ramp, the same downforce trick racing cars have flirted with for decades.</p></div></li>
-        <li><span class="t">2</span><div><h3>Upside down</h3><p>The suction held the car inverted on the ramp before it let go.</p></div></li>
-        <li><span class="t">3</span><div><h3>Spin, flip, land</h3><p>It spun off the ramp, flipped, and used air jets to set itself down.</p></div></li>
-        <li><span class="t">4</span><div><h3>Over the lineup</h3><p>The finale: a launch over parked cars and a semi-truck, with a mid-air flip, and a clean landing on the far side.</p></div></li>
-      </ol>
-    </div>
+<main>
+  <section class="opener">
+    <p class="dateline"><time datetime="2026-10-15">October 15, 2026</time> <span>SpaceX test site, McGregor, Texas</span></p>
+    <h1>The Roadster left the&nbsp;ground.</h1>
+    <p class="standfirst">Nine years after it was first shown, Tesla's second Roadster climbed a ramp on suction, hung upside down, and hopped a row of cars on cold-gas thrusters.</p>
   </section>
 
-  <section class="block" id="sim">
-    <header>
-      <span class="label">Under the hood of this page</span>
-      <h2>How the simulation works</h2>
-      <p>The jump above is computed, not keyframed. Masses and thrusts are our estimates, not Tesla figures.</p>
-    </header>
-    <div class="body">
-      <ol class="beats">
-        <li><span class="t">1</span><div><h3>A 1,900 kg body on four springs</h3><p>The car is a rigid body with real inertia for roll, pitch and yaw. Each wheel has its own spring and damper and a tyre that grips up to 1.15 g, so you can see the suspension unload during the spool and compress on landing.</p></div></li>
-        <li><span class="t">2</span><div><h3>Ten nozzles, each with its own force</h3><p>Four floor nozzles near the wheel arches (up to 18 kN each), four in the diffuser and two in the nose. Every nozzle pushes at its own position, so firing one side harder spins the car. Valves take about 40 ms to respond.</p></div></li>
-        <li><span class="t">3</span><div><h3>A flight computer flies the stunt</h3><p>The car on the night was remote-operated. Here a controller does the job. On the jump it lifts off, rolls 360° along the direction of travel, uses even bursts while the car is on its side to cancel sideways drift, holds the heading with the nose jets, and follows a glide path down to touch the ground at about 2 m/s.</p></div></li>
-        <li><span class="t">4</span><div><h3>The ramp: suction does the climbing</h3><p>Fans under the floor pull the car onto a curved wall with up to 30 kN, 1.6 times its weight. That is enough grip to drive up past vertical and pause upside down at about 12 m. Then, as in Tesla's video, it creeps on with the diffuser jets helping and tips off the end of the runway upside down. Past the runway it rolls 180° about its own length, an x-axis flip, so it comes up on its wheels facing the opposite way to the runway. It hovers slowly down on its floor jets, with the diffuser and nose jets holding position, settles at the foot of the ramp at under 1 m/s and drives away.</p></div></li>
-        <li><span class="t">5</span><div><h3>Sound from the numbers</h3><p>Nothing is recorded. The motor whine follows wheel speed, the hiss and roar follow total thrust, each valve pops as it opens, the fans whine with suction, and landings thump harder the faster the car comes down. Volume and stereo pan follow the camera.</p></div></li>
-        <li><span class="t">6</span><div><h3>Track Mode aero</h3><p>The wing button cycles the three modes from Tesla's video. Road stows the wing, High-Downforce raises and pitches it, Low-Drag raises it flat. Each mode changes the downforce in the simulation.</p></div></li>
-      </ol>
+  <figure class="hero-shot">
+    <img src="/src/story/img/hero.webp" width="1800" height="900" alt="A white roadster upside down in mid-air at night, trailing jets of gas, over two sedans, a semi cab, a pickup and a small cab parked in a row.">
+    <figcaption>The lineup jump, as our simulation flies it: a full roll over two sedans, a Semi cab, a Cybertruck and a Cybercab. A 3D reconstruction, not footage.</figcaption>
+  </figure>
+
+  <section class="lede">
+    <div class="lede-text">
+      <p>The car was operated remotely; no one sat inside for the stunts. Fans under the floor pulled it onto a curved ramp and held it there upside down. It let go, flipped, and set itself down on air jets. For the finale it launched over parked cars and a semi-truck with a roll in the middle, and landed clean on the far side.</p>
+      <p>The demo was real. Most of the numbers around it come from Tesla and Elon Musk, and none of them have been tested independently yet.</p>
     </div>
+    <aside class="spec" aria-label="As announced">
+      <h2 class="spec-title">As announced</h2>
+      <dl>
+        <div><dt>0–60 mph</dt><dd><b>0.59</b> s <small>claimed, top trim</small></dd></div>
+        <div><dt>Thrusters</dt><dd><b>10</b> cold-gas nozzles</dd></div>
+        <div><dt>Trims</dt><dd>Performance, Thrust, Rocket</dd></div>
+        <div><dt>Price</dt><dd>Not announced</dd></div>
+        <div><dt>Production</dt><dd>2027 <small>Musk's estimate</small></dd></div>
+        <div><dt>First shown</dt><dd>November 2017</dd></div>
+      </dl>
+    </aside>
   </section>
 
-  <section class="block" id="trims">
-    <header>
-      <span class="label">The lineup</span>
-      <h2>Three trims, two of them add-ons</h2>
-      <p>Tesla treats Thrust and Rocket as augments stacked on the Performance car.</p>
-    </header>
-    <div class="body">
-      <div class="trims">
-        <div class="trim"><span class="tag base">Base car</span><h3>Performance</h3><p>The two-seat sports car itself. Everything else bolts on top of this.</p></div>
-        <div class="trim"><span class="tag aug">Augment</span><h3>Thrust</h3><p>Adds the cold-gas thruster system for extra launch and handling.</p></div>
-        <div class="trim rocket"><span class="tag track">Not road legal</span><h3>Rocket</h3><p>The full package. Tesla's own page reportedly says it is not approved for public roads.</p></div>
+  <section class="night" aria-labelledby="night-title">
+    <h2 id="night-title">What the car did</h2>
+    <ol class="frames">
+      <li>
+        <img src="/src/story/img/climb.webp" width="1200" height="750" loading="lazy" alt="The roadster driving up the vertical face of a tall curved white ramp at night.">
+        <h3>Up the wall on suction</h3>
+        <p>Fans underneath pulled the car onto a steep curved ramp and kept it there past vertical.</p>
+      </li>
+      <li>
+        <img src="/src/story/img/hang.webp" width="1200" height="750" loading="lazy" alt="The roadster upside down near the top of the curved ramp, beside a steel truss.">
+        <h3>Upside down at the top</h3>
+        <p>The suction held it inverted, about 12 m up, before it crept on to the end.</p>
+      </li>
+      <li>
+        <img src="/src/story/img/flip.webp" width="1200" height="750" loading="lazy" alt="Close-up of the roadster tipping off the end of the ramp, gas venting from its nozzles.">
+        <h3>Off the end, flip, land</h3>
+        <p>It tipped off, rolled half a turn, and lowered itself to the ground on its jets.</p>
+      </li>
+      <li>
+        <img src="/src/story/img/glide.webp" width="1200" height="750" loading="lazy" alt="The roadster gliding down on jets past the last parked car in the row.">
+        <h3>Over the lineup</h3>
+        <p>The finale: a hop over the parked cars and a semi, a roll in mid-air, and a soft landing.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="strip-section" aria-labelledby="strip-title">
+    <div class="section-head">
+      <h2 id="strip-title">How short is 0.59 seconds?</h2>
+      <p>Each car covers 0–60 mph in its claimed time, played at real speed.</p>
+    </div>
+    <div class="strip">
+      <div class="lane hero-lane" data-time="0.59">
+        <div class="who">2026 Roadster <span>claimed, top trim</span></div>
+        <div class="track"><div class="fill"></div><div class="car"></div></div>
+        <div class="time">0.59 s</div>
+      </div>
+      <div class="lane" data-time="1.9">
+        <div class="who">2017 Roadster concept <span>claimed at reveal</span></div>
+        <div class="track"><div class="fill"></div><div class="car"></div></div>
+        <div class="time">1.90 s</div>
+      </div>
+      <div class="lane" data-time="3.9">
+        <div class="who">2008 Roadster <span>production car</span></div>
+        <div class="track"><div class="fill"></div><div class="car"></div></div>
+        <div class="time">3.90 s</div>
+      </div>
+      <div class="strip-foot">
+        <span class="scale"><span>0 mph</span><span>60 mph</span></span>
+        <button class="race" id="raceBtn" type="button">Run 0–60</button>
       </div>
     </div>
   </section>
 
-  <section class="block" id="strip">
-    <header>
-      <span class="label">Drag strip</span>
-      <h2>How short is 0.59 seconds?</h2>
-      <p>Press Run. Each car covers 0–60 mph in its real claimed time, played at real speed.</p>
-    </header>
-    <div class="body">
-      <div class="strip">
-        <div class="strip-top">
-          <span class="label">0 → 60 mph · real time</span>
-          <button class="btn primary" id="raceBtn" type="button">Run 0–60</button>
-        </div>
-        <div class="lane hero-lane" data-time="0.59"><div class="who">2026 Roadster<span>claimed, top trim</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">0.59 s</div></div>
-        <div class="lane" data-time="1.9"><div class="who">2017 Roadster concept<span>claimed at reveal</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">1.90 s</div></div>
-        <div class="lane" data-time="3.9"><div class="who">2008 original Roadster<span>production car</span></div><div class="track"><div class="fill"></div><div class="car"></div></div><div class="time">3.90 s</div></div>
-        <div class="strip-scale label"><span></span><div><span>0 mph</span><span>60 mph</span></div><span></span></div>
+  <section class="trims-section" aria-labelledby="trims-title">
+    <div class="section-head">
+      <h2 id="trims-title">Three trims, stacked</h2>
+      <p>Thrust and Rocket are add-ons to the Performance car, each building on the one before.</p>
+    </div>
+    <ol class="stack">
+      <li class="layer rocket"><span class="step">+</span><div><h3>Rocket</h3><p>The full package. Tesla's own page reportedly says it is not approved for public roads.</p></div><span class="flag">Track only</span></li>
+      <li class="layer thrust"><span class="step">+</span><div><h3>Thrust</h3><p>Adds the cold-gas thruster system for launches and handling.</p></div></li>
+      <li class="layer base"><span class="step">Base</span><div><h3>Performance</h3><p>The two-seat sports car itself.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="ledger-section" aria-labelledby="ledger-title">
+    <h2 id="ledger-title">Seen, and still to prove</h2>
+    <div class="ledger">
+      <div>
+        <h3 class="seen">Seen on the night</h3>
+        <ul class="marks seen">
+          <li>A car climbing a ramp on suction and hanging upside down</li>
+          <li>A thruster-assisted hop over cars and a semi, with a roll</li>
+          <li>Three trims named: Performance, Thrust and Rocket</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="open">Not shown yet</h3>
+        <ul class="marks open">
+          <li>Sustained flight. This was a hop.</li>
+          <li>A person driving it through the stunts</li>
+          <li>An independent test of the 0.59 s figure</li>
+          <li>A price, a production date, a street-legal Rocket</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section class="block" id="timeline">
-    <header>
-      <span class="label">The long road</span>
-      <h2>From concept to liftoff</h2>
-    </header>
-    <div class="body">
-      <ol class="tl">
-        <li><span class="when">2008</span><p>The original Roadster goes on sale. It is Tesla's first car.</p></li>
-        <li><span class="when">Nov 2017</span><p>The second-gen Roadster is revealed as a surprise at the Tesla Semi event, with a claimed 1.9 s 0–60.</p></li>
-        <li><span class="when">Feb 2018</span><p>Musk's own first-gen Roadster rides a Falcon Heavy into orbit around the Sun.</p></li>
-        <li><span class="when">Jun 2018</span><p>Musk teases a "SpaceX package" with about ten small cold-gas thrusters.</p></li>
-        <li><span class="when">Sep 28, 2026</span><p>The Oct 1 unveiling is called off for weather. Tesla says the show can only be held outdoors.</p></li>
-        <li class="now"><span class="when">Oct 15, 2026</span><p>The unveiling happens at a SpaceX test site in Texas, and the car leaves the ground.</p></li>
-        <li><span class="when">2027?</span><p>Musk has pointed to production starting in 2027. Tesla has not confirmed a date or a price.</p></li>
-      </ol>
+  <section class="timeline-section" aria-labelledby="tl-title">
+    <h2 id="tl-title">Nine years to liftoff</h2>
+    <ol class="tl">
+      <li><time>2008</time><p>The original Roadster goes on sale. It is Tesla's first car.</p></li>
+      <li><time>Nov 2017</time><p>The second Roadster is revealed as a surprise at the Tesla Semi event, with a claimed 1.9 s 0–60.</p></li>
+      <li><time>Feb 2018</time><p>Musk's own first-generation Roadster rides a Falcon Heavy into orbit around the Sun.</p></li>
+      <li><time>Jun 2018</time><p>Musk teases a "SpaceX package" with about ten small cold-gas thrusters.</p></li>
+      <li><time>Sep 28, 2026</time><p>The October 1 unveiling is called off for weather; Tesla says the show can only be held outdoors.</p></li>
+      <li class="now"><time datetime="2026-10-15">Oct 15, 2026</time><p>The unveiling at a SpaceX test site in Texas. The car leaves the ground.</p></li>
+      <li class="later"><time>2027</time><p>Musk has pointed to production starting in 2027. Tesla has not confirmed a date or a price.</p></li>
+    </ol>
+  </section>
+
+  <section class="play-band" aria-labelledby="play-title">
+    <img src="/src/story/img/drive.webp" width="1200" height="750" loading="lazy" alt="The roadster seen from behind on a floodlit night course, heading for a striped wall.">
+    <div class="play-copy">
+      <h2 id="play-title">Your turn</h2>
+      <p>Fly both stunts yourself, or race a random night course: bust crates, jump walls, flip in the air.</p>
+      <a class="play-button" href="index.html">Play Roadster Liftoff</a>
     </div>
   </section>
 
-  <section class="block" id="ledger">
-    <header>
-      <span class="label">Reality check</span>
-      <h2>Seen vs. still a promise</h2>
-      <p>The demo was real. Most of the numbers come from Tesla and Musk.</p>
-    </header>
-    <div class="body">
-      <div class="ledger">
-        <div class="seen">
-          <h3>Seen on the night</h3>
-          <ul>
-            <li>A car climbing a ramp on suction and hanging upside down</li>
-            <li>A thruster-assisted hop over cars and a semi, with a flip</li>
-            <li>Three trims named: Performance, Thrust, Rocket</li>
-          </ul>
-        </div>
-        <div class="open">
-          <h3>Not yet shown</h3>
-          <ul>
-            <li>Sustained flight. This was a hop, not a flight</li>
-            <li>A human driving it through the stunts</li>
-            <li>Independent tests of the 0.59 s figure</li>
-            <li>A price, a production date, or a street-legal Rocket</li>
-          </ul>
-        </div>
-      </div>
+  <section class="sim-section" aria-labelledby="sim-title">
+    <div class="section-head">
+      <h2 id="sim-title">How the simulation works</h2>
+      <p>Everything on the other page is computed, not animated by hand. Masses and thrusts are our estimates.</p>
+    </div>
+    <div class="notes">
+      <div><h3>A 1,900 kg body on four springs</h3><p>A rigid body with its own inertia for roll, pitch and yaw. Each wheel has a spring, a damper and a tyre that grips up to 1.15 g.</p></div>
+      <div><h3>Ten nozzles, each pushing from its own spot</h3><p>Four under the floor (up to 18 kN each), four in the diffuser, two in the nose. Firing one side harder turns the car. Valves take about 40 ms to respond.</p></div>
+      <div><h3>A flight computer for the demos</h3><p>It lifts off, rolls, cancels sideways drift, holds the heading with the nose jets and follows a glide path down to about 2 m/s.</p></div>
+      <div><h3>Suction for the ramp</h3><p>Fans pull the floor toward the wall with up to 30 kN, 1.6 times the car's weight, which is enough to drive past vertical and stop upside down.</p></div>
+      <div><h3>Sound made from the numbers</h3><p>Nothing is recorded. Motor whine follows wheel speed, the hiss follows total thrust, valves pop as they open and landings thump.</p></div>
+      <div><h3>Track Mode wing</h3><p>Road, High-Downforce and Low-Drag, as in Tesla's video. Each mode changes the downforce in the physics.</p></div>
     </div>
   </section>
 
-  <section class="block" id="sources">
-    <header>
-      <span class="label">Sources</span>
-      <h2>Read the coverage</h2>
-    </header>
-    <div class="body">
-      <ul class="sources">
-        <li><span class="label">CNN</span><a href="https://edition.cnn.com/2026/10/15/business/tesla-unveils-what-it-says-is-a-flying-car" target="_blank" rel="noopener">Tesla unveils what it says is a flying car</a></li>
-        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/15/tesla-unveils-cyberfied-new-roadster-kickflip/" target="_blank" rel="noopener">Tesla unveils Cyberfied new Roadster that can kickflip</a></li>
-        <li><span class="label">Electrek</span><a href="https://electrek.co/2026/10/13/tesla-roadster-event-thursday-nine-years-delays/" target="_blank" rel="noopener">Roadster event set after nearly 9 years of delays</a></li>
-        <li><span class="label">Dezeen</span><a href="https://www.dezeen.com/2026/10/16/tesla-launches-flying-roadster-concept-car/" target="_blank" rel="noopener">Tesla launches flying Roadster concept car</a></li>
-        <li><span class="label">Fox Business</span><a href="https://www.foxbusiness.com/technology/teslas-new-roadster-makes-flying-debut-hitting-60-mph-under-second" target="_blank" rel="noopener">New Roadster takes flight at SpaceX facility</a></li>
-        <li><span class="label">Wikipedia</span><a href="https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)" target="_blank" rel="noopener">Tesla Roadster (second generation)</a></li>
-      </ul>
-    </div>
+  <section class="sources-section" aria-labelledby="src-title">
+    <h2 id="src-title">Coverage</h2>
+    <ul class="sources">
+      <li><a href="https://edition.cnn.com/2026/10/15/business/tesla-unveils-what-it-says-is-a-flying-car" target="_blank" rel="noopener"><span class="outlet">CNN</span><span class="headline">Tesla unveils what it says is a flying car</span></a></li>
+      <li><a href="https://electrek.co/2026/10/15/tesla-unveils-cyberfied-new-roadster-kickflip/" target="_blank" rel="noopener"><span class="outlet">Electrek</span><span class="headline">Tesla unveils Cyberfied new Roadster that can kickflip</span></a></li>
+      <li><a href="https://electrek.co/2026/10/13/tesla-roadster-event-thursday-nine-years-delays/" target="_blank" rel="noopener"><span class="outlet">Electrek</span><span class="headline">Roadster event set after nearly 9 years of delays</span></a></li>
+      <li><a href="https://www.dezeen.com/2026/10/16/tesla-launches-flying-roadster-concept-car/" target="_blank" rel="noopener"><span class="outlet">Dezeen</span><span class="headline">Tesla launches flying Roadster concept car</span></a></li>
+      <li><a href="https://www.foxbusiness.com/technology/teslas-new-roadster-makes-flying-debut-hitting-60-mph-under-second" target="_blank" rel="noopener"><span class="outlet">Fox Business</span><span class="headline">New Roadster takes flight at SpaceX facility</span></a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)" target="_blank" rel="noopener"><span class="outlet">Wikipedia</span><span class="headline">Tesla Roadster (second generation)</span></a></li>
+    </ul>
   </section>
+</main>
 
-  <footer>
-    <p>An unofficial fan page made the day after the unveiling. Not affiliated with or endorsed by Tesla or SpaceX. The 3D car is a fan model based on Tesla's launch photos and video, not official design data, and the animation is an illustration, not footage.</p>
-    <span class="label">Updated Oct 16, 2026</span>
-  </footer>
-</div>
+<footer class="foot">
+  <p>An unofficial fan page made the day after the unveiling. Not affiliated with or endorsed by Tesla or SpaceX. The car is a fan model built from Tesla's launch photos and video, not official design data, and every image here is our own 3D render.</p>
+  <p class="updated">Updated <time datetime="2026-10-17">October 17, 2026</time></p>
+</footer>
+
 <script type="module" src="/src/story/main.ts"></script>
 </body>
 </html>
