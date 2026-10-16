@@ -13,7 +13,7 @@ import {
 } from "./constants";
 import { castWheelRay } from "./contacts";
 import { createFlightComputer } from "./flight-computer";
-import type { Nozzle, NozzleSpec, Scenario, SimEvents, SimState, Wheel } from "./types";
+import type { Nozzle, NozzleSpec, Pilot, Scenario, SimEvents, SimState, Wheel } from "./types";
 
 export interface RoadsterSim {
   readonly state: SimState;
@@ -21,8 +21,8 @@ export interface RoadsterSim {
   readonly nozzles: readonly Nozzle[];
   /** Hooks for the game: busts, hits and recoveries. Set them any time. */
   readonly events: SimEvents;
-  /** Start a scenario from its starting line. */
-  reset(scenario?: Scenario): void;
+  /** Start a scenario from its starting line, flown by `pilot` (drive is always the player's). */
+  reset(scenario?: Scenario, pilot?: Pilot): void;
   /** Advance by `dt` seconds of real time, in fixed physics steps. */
   step(dt: number): void;
   /** Advance by exactly one physics step (DT). */
@@ -45,10 +45,10 @@ export function createRoadsterSim(nozzleSpecs: readonly NozzleSpec[], events: Si
   })));
   const nozzles: Nozzle[] = nozzleSpecs.map(spec => ({ ...spec, thrust: 0, command: 0 }));
   const state: SimState = {
-    scenario: "jump", position: new Vector3(), velocity: new Vector3(), orientation: new Quaternion(), angularVelocity: new Vector3(),
+    scenario: "jump", pilot: "auto", position: new Vector3(), velocity: new Vector3(), orientation: new Quaternion(), angularVelocity: new Vector3(),
     phase: "Approach", phaseTime: 0, time: 0, rollAngle: 0, pitchAngle: 0, wingMode: 1, fanLevel: 0, fanCommand: 0,
-    flipStartRoll: 0, wheelsOnGround: 0, upsideDownTime: 0,
-    input: { throttle: 0, steer: 0, jets: false, boost: false }, fuel: 100, steerAngle: 0, obstacles: [],
+    flipStartRoll: 0, wheelsOnGround: 0, airTime: 0, upsideDownTime: 0,
+    input: { throttle: 0, steer: 0, roll: 0, jets: false, boost: false }, fuel: 100, steerAngle: 0, obstacles: [],
   };
   const control = createFlightComputer(state, wheels, nozzles, events);
 
@@ -59,12 +59,14 @@ export function createRoadsterSim(nozzleSpecs: readonly NozzleSpec[], events: Si
   const inverse = new Quaternion(), bodyTorque = new Vector3(), bodySpin = new Vector3(), angularMomentum = new Vector3();
   const gyro = new Vector3();
 
-  function reset(scenario: Scenario = state.scenario) {
+  function reset(scenario: Scenario = state.scenario, pilot: Pilot = state.pilot) {
     state.scenario = scenario;
+    state.pilot = scenario === "drive" ? "player" : pilot;
     state.position.set(START_X[scenario], COM_HEIGHT, 0); state.velocity.set(0, 0, 0);
     state.orientation.identity(); state.angularVelocity.set(0, 0, 0);
-    state.fuel = START_FUEL; state.steerAngle = 0; state.upsideDownTime = 0;
-    state.phase = scenario === "drive" ? "Ready" : "Approach"; state.phaseTime = 0; state.time = 0;
+    state.fuel = scenario === "drive" ? START_FUEL : 100; state.steerAngle = 0; state.upsideDownTime = 0; state.airTime = 0;
+    Object.assign(state.input, { throttle: 0, steer: 0, roll: 0, jets: false, boost: false });
+    state.phase = state.pilot === "player" ? "Ready" : "Approach"; state.phaseTime = 0; state.time = 0;
     state.rollAngle = 0; state.pitchAngle = 0; state.fanLevel = 0; state.fanCommand = 0;
     for (const w of wheels) { w.length = w.previousLength = STATIC_LENGTH; w.spinRate = 0; w.onGround = false; }
     for (const n of nozzles) n.thrust = n.command = 0;
@@ -182,6 +184,8 @@ export function createRoadsterSim(nozzleSpecs: readonly NozzleSpec[], events: Si
     down.set(0, -1, 0).applyQuaternion(state.orientation); up.copy(down).negate();
     const touching = wheelForces(drivePerWheel);
     state.wheelsOnGround = touching;
+    if (touching > 0 && state.airTime > 0.25) events.onLanding?.(state.velocity.y);
+    state.airTime = touching > 0 ? 0 : state.airTime + DT;
     hullForces();
     // suction fans: pull the floor toward whatever surface the wheels are on (they only seal with the wheels down)
     const fanLag = state.fanCommand > state.fanLevel ? 0.35 : 0.12;

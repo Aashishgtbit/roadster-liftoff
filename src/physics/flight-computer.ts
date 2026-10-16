@@ -6,7 +6,7 @@ import { COM_HEIGHT, RAMP, TAKEOFF_X } from "../config";
 import {
   ASSIST_FUEL_RATE, BOOST_FUEL_RATE, DT, FLIP_DURATION, GRAVITY as g, HANG_ANGLE, HANG_TIME, HOVER_HEIGHT,
   INERTIA as I, JET_FUEL_RATE, JUMP_APPROACH_SPEED, LIFT_BURN_TIME, MASS as M, RAMP_APPROACH_SPEED, RAMP_CLIMB_SPEED,
-  RECHARGE_RATE, ROLL_DURATION, ROLL_START_TIME, SPOOL_DISTANCE,
+  RECHARGE_RATE, ROLL_DURATION, ROLL_RATE, ROLL_START_TIME, SOFT_DESCENT_SPEED, SPOOL_DISTANCE, WALL_CLIMB_SPEED,
 } from "./constants";
 import type { Nozzle, Phase, SimEvents, SimState, Wheel } from "./types";
 
@@ -123,7 +123,7 @@ export function createFlightComputer(state: SimState, wheels: readonly Wheel[], 
     if (anyWheelDown()) setPhase("Touchdown");
   }
 
-  /** Drive mode: the player's throttle, steering, jets and boost. Returns the total drive force. */
+  /** The player's throttle, steering, jets, roll and boost, in any scenario. Returns the total drive force. */
   function playerControl(att: Attitude, forwardSpeed: number): number {
     const input = state.input, speed = Math.abs(forwardSpeed), flying = state.wheelsOnGround === 0, hasFuel = state.fuel > 0;
     // steering eases toward the input; less lock at speed
@@ -133,17 +133,35 @@ export function createFlightComputer(state: SimState, wheels: readonly Wheel[], 
     if (input.throttle > 0) drive = forwardSpeed < 42 ? M * 9 * input.throttle * (1 - Math.max(0, forwardSpeed - 30) / 12) : 0;
     else if (input.throttle < 0) drive = forwardSpeed > 0.5 ? -M * 9 : (forwardSpeed > -8 ? -M * 4 : 0);
     else drive = -M * 0.3 * Math.sign(forwardSpeed) * Math.min(1, speed);   // coasting
-    if (input.jets && hasFuel) {
-      // floor jets lift the car and hold it level; steering turns it in the air with the nose jets
-      target.setFromAxisAngle(Y_AXIS, att.yaw - (flying ? input.steer * 0.7 : 0));
-      const torque = torqueToward(target, 3, 8), upY = Math.max(0.3, upVector().y);
-      // climb fast to a hover about 4.5 m up (enough to clear a wall) and hold there while the jets are held
-      const height = state.position.y - COM_HEIGHT, wantVy = clamp(1.6 * HOVER_HEIGHT - 1.6 * height, -3, 7);
-      commandFloorJets(clamp(M * (g + 5 * (wantVy - state.velocity.y)), 0, 2.3 * M * g) / upY, torque.roll, torque.pitch);
-      yawWithNoseJets(torque.yaw);
+    const onWall = state.scenario === "ramp" && rampWallAssist(att, forwardSpeed, flying);
+    if (onWall !== false) drive = onWall;
+
+    // in the air: Space climbs to a hover and holds it, the brake key lets the car down gently, Q / E roll it.
+    // Let go mid-flip and the roll carries on the same way until the wheels face down again.
+    const finishingFlip = flying && input.roll === 0 && upVector().y < 0.8 && Math.abs(att.rollRate) > 1.5;
+    const rollDirection = input.roll !== 0 ? input.roll : finishingFlip ? Math.sign(att.rollRate) : 0;
+    const rolling = flying && rollDirection !== 0, descending = flying && input.throttle < 0 && !input.jets;
+    if (hasFuel && (input.jets || descending || rolling)) {
+      const height = state.position.y - COM_HEIGHT, upY = upVector().y;
+      // descending: quick while high, easing to a soft touchdown (a glide path, like the stunts' landings)
+      const wantVy = input.jets ? clamp(1.6 * HOVER_HEIGHT[state.scenario] - 1.6 * height, -3, 7)
+        : descending ? -clamp(0.8 * height + SOFT_DESCENT_SPEED, SOFT_DESCENT_SPEED, 6) : null;
+      // the floor jets only lift while they point roughly down
+      const lift = wantVy !== null && upY > 0.3 ? clamp(M * (g + 5 * (wantVy - state.velocity.y)), 0, 2.3 * M * g) / upY : 0;
+      if (rolling) {
+        // spin about the car's length by firing one side's floor jets harder than the other's
+        commandFloorJets(lift, I.x * 16 * (rollDirection * ROLL_RATE - att.rollRate), I.z * 10 * -att.pitchRate);
+      } else {
+        // hold the car level; steering turns it in the air with the nose jets
+        target.setFromAxisAngle(Y_AXIS, att.yaw - (flying ? input.steer * 0.7 : 0));
+        const torque = torqueToward(target, 3, 8);
+        commandFloorJets(lift, torque.roll, torque.pitch);
+        yawWithNoseJets(torque.yaw);
+      }
       state.fuel -= JET_FUEL_RATE * DT;
     } else if (flying && hasFuel) {
-      // stability assist: in the air the flight computer pulses the floor jets to keep the car level
+      // stability assist: in the air the flight computer pulses the floor jets to bring the car level (it finishes
+      // a roll the player has taken past halfway)
       target.setFromAxisAngle(Y_AXIS, att.yaw);
       const torque = torqueToward(target, 2.5, 5);
       commandFloorJets(0, torque.roll, torque.pitch);
@@ -153,17 +171,37 @@ export function createFlightComputer(state: SimState, wheels: readonly Wheel[], 
     if (!flying && !input.jets && !input.boost) state.fuel += RECHARGE_RATE * DT;   // an on-board compressor slowly refills the tanks
     state.fuel = clamp(state.fuel, 0, 100);
     // stuck on its roof or side for over a second: set it back on its wheels, keeping the heading
-    state.upsideDownTime = upVector().y < 0.4 && state.velocity.length() < 1.5 ? state.upsideDownTime + DT : 0;
+    // (not when the wheels are on something: upside down on the ramp wall is the point of the ramp)
+    const stuck = upVector().y < 0.4 && state.velocity.length() < 1.5 && state.wheelsOnGround < 3 && onWall === false;
+    state.upsideDownTime = stuck ? state.upsideDownTime + DT : 0;
     if (state.upsideDownTime > 1.1) {
       state.orientation.setFromAxisAngle(Y_AXIS, att.yaw); state.angularVelocity.set(0, 0, 0); state.velocity.set(0, 0, 0);
       state.position.y = Math.max(state.position.y, COM_HEIGHT + 0.35); state.rollAngle = state.pitchAngle = 0; state.upsideDownTime = 0;
       events.onRecover?.();
     }
-    state.phase = flying ? (input.jets && hasFuel ? "Flying" : "Airborne")
+    if (onWall !== false) state.phase = angleOnRamp() > 0.6 * Math.PI && speed < 0.6 ? "Hang" : "Climb";
+    else state.phase = flying ? (input.jets && hasFuel ? "Flying" : "Airborne")
       : input.boost && hasFuel ? "Boost"
       : speed > 0.3 || input.throttle !== 0 ? "Driving"
       : state.phase === "Ready" ? "Ready" : "Stopped";
     return drive;
+  }
+
+  /**
+   * Ramp, player at the wheel: the suction fans seal near and on the wall, and the motors hold the car against gravity
+   * along it, so it can stop anywhere, even upside down. Returns the drive force while on the wall, otherwise false.
+   */
+  function rampWallAssist(att: Attitude, forwardSpeed: number, flying: boolean): number | false {
+    const angle = angleOnRamp(), x = state.position.x, inLane = Math.abs(state.position.z) < RAMP.halfWidth;
+    const nearWall = !flying && inLane && x > RAMP.startX - 6 && x < RAMP.startX + RAMP.radius + 1;
+    // the fans cut just before the end, so the car can tip off it
+    state.fanCommand = nearWall && angle < RAMP.endAngle - 0.08 ? 1 : 0;
+    if (!nearWall || angle < 0.03 || x < RAMP.startX) return false;
+    const throttle = state.input.throttle;
+    const wantSpeed = throttle > 0 ? WALL_CLIMB_SPEED * throttle : throttle < 0 ? -3 : 0;
+    // on the overhang the tyres alone cannot push on, so the diffuser jets help (they fire at the lip in the video)
+    if (throttle > 0 && angle > 0.8 * Math.PI) for (const n of tailJets) n.command = clamp(0.55 + 0.4 * (2.2 - forwardSpeed), 0, 1);
+    return M * g * att.forward.y + M * 5 * (wantSpeed - forwardSpeed);
   }
 
   /** The lineup jump: approach, spool the floor jets, lift, roll 360° over the parked cars, glide down. */
@@ -298,12 +336,12 @@ export function createFlightComputer(state: SimState, wheels: readonly Wheel[], 
     for (const n of nozzles) n.command = 0;
     const pitchHold = I.z * (30 * -att.pitch + 10 * -att.pitchRate);
     let drive: number;
-    if (state.scenario === "drive") drive = playerControl(att, forwardSpeed);
+    if (state.scenario === "drive" || state.pilot === "player") drive = playerControl(att, forwardSpeed);
     else {
       drive = state.scenario === "jump" ? lineupJump(att, forwardSpeed, pitchHold) : rampHang(att, forwardSpeed, pitchHold);
       drive = afterLanding(forwardSpeed, pitchHold, drive);
     }
-    const limit = state.scenario === "jump" ? 14000 : 34000;
+    const limit = state.scenario === "jump" && state.pilot === "auto" ? 14000 : 34000;
     return clamp(drive, -limit, limit) / 4;
   };
 }

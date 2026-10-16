@@ -4,16 +4,19 @@ import "./styles/tokens.css";
 import "./styles/buttons.css";
 import "./styles/stage.css";
 import "./styles/game.css";
+import "./styles/gauges.css";
 import "./styles/app.css";
 import "./scene/environment";
 import "./scene/lights";
 import "./stunts/lineup";
 import "./stunts/ramp";
+import "./game/input";
 import "./ui/controls";
 import { app, prefersReducedMotion } from "./core/state";
 import { buttons, setLabel, stageMessage } from "./ui/dom";
 import { clamp } from "./core/math";
 import { simulate } from "./run/runner";
+import { restartRun } from "./game/modes";
 import { carState } from "./run/sim";
 import { updateCamera } from "./camera/camera";
 import { updateSound } from "./audio/sound";
@@ -25,6 +28,7 @@ declare global {
 
 // start on the most dramatic frame: upside down over the lineup
 resize();
+restartRun("jump", "auto");
 for (let i = 0; i < 900 && !(carState.phase === "Roll" && carState.rollAngle > Math.PI * 0.95); i++) simulate(1 / 60);
 app.snapCamera = true;
 updateCamera(0);

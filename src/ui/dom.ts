@@ -16,17 +16,9 @@ export const stage = byId("stage");
 export const canvas = byId<HTMLCanvasElement>("scene");
 export const stageMessage = byId("stageMsg");
 
-export const hud = {
-  phase: byId("hudPhase"),
-  height: byId("hudAlt"),
-  speed: byId("hudSpd"),
-  rotation: byId("hudRot"),
-  jets: byId("hudJets"),
-  suction: byId("hudFan"),
-};
-
 export const buttons = {
   sound: byId<HTMLButtonElement>("soundBtn"),
+  play: byId<HTMLButtonElement>("playBtn"),
   pause: byId<HTMLButtonElement>("pauseBtn"),
   replay: byId<HTMLButtonElement>("replayBtn"),
   freeLook: byId<HTMLButtonElement>("camBtn"),

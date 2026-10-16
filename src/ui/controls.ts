@@ -3,25 +3,16 @@ import { app } from "../core/state";
 import { buttons, canvas, setLabel, stuntTabs } from "./dom";
 import { WING_MODE_NAMES, animateWing, wing } from "../car/roadster";
 import type { Scenario, WingMode } from "../physics/types";
-import { resetGame } from "../game/game";
-import { resultsCard } from "../game/ui";
-import { play, restart, setStunt, simulate } from "../run/runner";
+import { isPlaying } from "../game/modes";
+import { replay, setStunt } from "../run/runner";
 import { carState } from "../run/sim";
 import { setFreeLook } from "../camera/camera";
 import { isSoundOn, setSound } from "../audio/sound";
 import { byId } from "./dom";
 
-const startDrive = (newLayout: boolean) => { restart("drive"); resetGame(newLayout); canvas.focus({ preventScroll: true }); };
-resultsCard.sameCourse.addEventListener("click", () => startDrive(false));
-resultsCard.newCourse.addEventListener("click", () => startDrive(true));
-
 buttons.pause.addEventListener("click", () => { app.playing = !app.playing; setLabel(buttons.pause, app.playing ? "Pause" : "Play"); });
-buttons.replay.addEventListener("click", () => {
-  restart(carState.scenario);
-  if (carState.scenario === "drive") resetGame(false);
-  simulate(0);
-  if (!app.playing) play();
-});
+buttons.replay.addEventListener("click", () => { replay(); canvas.focus({ preventScroll: true }); });
+buttons.play.addEventListener("click", () => setStunt(carState.scenario, isPlaying() ? "auto" : "player"));
 buttons.freeLook.addEventListener("click", () => setFreeLook(!app.freeLook));
 buttons.sound.addEventListener("click", () => setSound(!isSoundOn()));
 for (const tab of stuntTabs) tab.addEventListener("click", () => setStunt(tab.dataset.stunt as Scenario));

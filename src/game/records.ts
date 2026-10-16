@@ -1,13 +1,13 @@
-// Drive it: the best time and score, kept in this browser.
+// Best times and scores, kept in this browser, one record per mode.
 
 export interface BestRecord { time?: number; score?: number }
 
-const KEY = "roadster-best";
+const keyFor = (mode: string) => mode === "drive" ? "roadster-best" : `roadster-best-${mode}`;
 
-export function loadBest(): BestRecord {
-  try { return JSON.parse(localStorage.getItem(KEY) || "{}") as BestRecord; } catch { return {}; }
+export function loadBest(mode: string): BestRecord {
+  try { return JSON.parse(localStorage.getItem(keyFor(mode)) || "{}") as BestRecord; } catch { return {}; }
 }
 
-export function saveBest(record: BestRecord) {
-  try { localStorage.setItem(KEY, JSON.stringify(record)); } catch { /* private window: keep it for this visit only */ }
+export function saveBest(mode: string, record: BestRecord) {
+  try { localStorage.setItem(keyFor(mode), JSON.stringify(record)); } catch { /* private window: keep it for this visit only */ }
 }

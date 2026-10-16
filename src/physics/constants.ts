@@ -42,10 +42,13 @@ export const HANG_ANGLE = 0.74 * Math.PI;  // where on the curve the car pauses 
 export const HANG_TIME = 1.3;
 export const FLIP_DURATION = 0.8;          // the 180° roll after tipping off the end
 
-// drive mode
+// the player at the controls
 export const BUST_SPEED = 12.5;            // m/s (45 km/h): crates give way above this
-export const START_FUEL = 60;
-export const HOVER_HEIGHT = 4.5;           // the jets climb to about this height and hold it
+export const START_FUEL = 60;              // Drive it; the playable stunts start full
+export const HOVER_HEIGHT = { drive: 4.5, jump: 7, ramp: 4.5 };   // the jets climb to about this height and hold it
+export const ROLL_RATE = 6.5;              // rad/s, Q / E in the air: a full flip in about a second
+export const SOFT_DESCENT_SPEED = 1.5;     // m/s at touchdown, brake held in the air
+export const WALL_CLIMB_SPEED = 7;         // m/s up the ramp wall at full throttle
 export const JET_FUEL_RATE = 15;           // fuel per second, jets on
 export const ASSIST_FUEL_RATE = 3;         // stability assist pulses while airborne
 export const BOOST_FUEL_RATE = 12;

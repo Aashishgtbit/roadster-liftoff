@@ -1,8 +1,11 @@
 // Types shared by the physics, the game and the scene.
 import type { Quaternion, Vector3 } from "three";
 
-/** The three things the car can do: two scripted stunts from the unveiling, and the player driving. */
+/** The three things the car can do: two stunts from the unveiling, and the open course. */
 export type Scenario = "jump" | "ramp" | "drive";
+
+/** Who flies the car: the scripted flight computer (the stunts as on the night) or the player. Drive is always the player. */
+export type Pilot = "auto" | "player";
 
 /** What the flight computer is doing. Each stunt steps through its own phases; drive mode reports the car's state. */
 export type Phase =
@@ -12,7 +15,7 @@ export type Phase =
   | "Fans" | "Climb" | "Hang" | "Exit" | "Flip" | "Hover" | "Drive off"
   // both stunts, back on the ground
   | "Touchdown" | "Brake" | "Parked"
-  // drive mode
+  // the player at the controls
   | "Ready" | "Driving" | "Stopped" | "Boost" | "Flying" | "Airborne";
 
 /** 0 = Road (stowed), 1 = High-Downforce (raised and pitched), 2 = Low-Drag (raised and flat). */
@@ -57,7 +60,7 @@ interface ObstacleBase {
 
 /** A solid box: crate stack, wall or track barrier. */
 export interface BoxObstacle extends ObstacleBase {
-  readonly kind: "crates" | "wall" | "barrier";
+  readonly kind: "crates" | "wall" | "barrier" | "vehicle";
   readonly minY: number;
   readonly maxY: number;
   readonly breakable?: boolean;   // gives way when hit faster than BUST_SPEED
@@ -71,17 +74,19 @@ export interface RampObstacle extends ObstacleBase {
 
 export type Obstacle = BoxObstacle | RampObstacle;
 
-/** The player's controls in drive mode. */
+/** The player's controls. */
 export interface DriverInput {
-  throttle: number;   // -1 (brake / reverse) .. 1 (gas)
+  throttle: number;   // -1 (brake / reverse; in the air, a soft descent on the jets) .. 1 (gas)
   steer: number;      // -1 (left) .. 1 (right)
-  jets: boolean;
-  boost: boolean;
+  roll: number;       // -1 .. 1: in the air, spin about the car's length
+  jets: boolean;      // floor jets: climb to a hover and hold it
+  boost: boolean;     // rear jets
 }
 
 /** Everything that changes as the simulation runs. */
 export interface SimState {
   scenario: Scenario;
+  pilot: Pilot;
   position: Vector3;           // centre of mass, world frame
   velocity: Vector3;
   orientation: Quaternion;
@@ -96,6 +101,7 @@ export interface SimState {
   fanCommand: number;
   flipStartRoll: number;       // ramp stunt: roll angle when the flip began
   wheelsOnGround: number;
+  airTime: number;             // seconds since a wheel last touched anything
   upsideDownTime: number;      // drive mode: how long the car has been stuck on its roof or side
   input: DriverInput;
   fuel: number;                // 0..100
@@ -103,9 +109,11 @@ export interface SimState {
   obstacles: Obstacle[];
 }
 
-/** Called when the car busts through, hits, or is set back on its wheels. */
+/** Called when the car busts through, hits, lands, or is set back on its wheels. */
 export interface SimEvents {
   onBust?: (obstacle: BoxObstacle, closingSpeed: number) => void;
   onHit?: (obstacle: BoxObstacle, closingSpeed: number) => void;
+  /** A wheel touches down after at least a quarter second in the air; `verticalSpeed` is negative going down. */
+  onLanding?: (verticalSpeed: number) => void;
   onRecover?: () => void;
 }

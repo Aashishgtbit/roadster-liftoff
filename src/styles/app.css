@@ -19,7 +19,6 @@ body { overflow: hidden; }
 .stage { flex: 1; min-height: 0; height: auto; border: 0; }
 #scene:focus { outline: none; }
 .stage-ctl { top: auto; bottom: 16px; right: var(--gutter); left: auto; flex-wrap: nowrap; }
-.hud { border-radius: 10px; background: rgba(9,13,24,.55); }
 .stage-note { left: var(--gutter); right: auto; bottom: 22px; }
 .app.expanded .bar { display: none; }
 .app.expanded .btn.icon.fs-float { display: inline-flex; }
@@ -36,8 +35,5 @@ body { overflow: hidden; }
   .stage-ctl { top: 14px; bottom: auto; right: var(--gutter); left: auto; }
   .stage-note { display: none; }
   .hud { top: 60px; }
-  .stage.driving .stage-ctl { top: auto; bottom: 86px; }
-  .g-panel, .stage.driving .g-panel { top: 10px; min-width: 0; width: calc(100% - 2 * var(--gutter)); }
-  .stage.driving .g-toast { top: 120px; }
-  .g-speed b { font-size: 34px; }
+  .stage.playing .stage-ctl { top: auto; bottom: 150px; }
 }

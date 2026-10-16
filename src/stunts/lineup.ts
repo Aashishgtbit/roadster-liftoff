@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { enableShadows, scene } from "../core/renderer";
 import { blackMaterial, darkGlassMaterial } from "../car/materials";
+import { LINEUP } from "./lineup-layout";
 
 export const lineup = new THREE.Group();
 scene.add(lineup);
@@ -65,11 +66,13 @@ function cybercab(x: number, z: number) {
   park(vehicle, x, z);
 }
 
-sedan(0xe9eaed, -1.5, 0.2);
-sedan(0x8e1410, 1.6, -0.3);
-semiCab(4.9, 0.4);
-cybertruck(8.3, -0.2);
-cybercab(11.2, 0.1);
+// the models, in the order and places of LINEUP (their sizes match its boxes)
+const [whiteSedan, redSedan, semi, truck, cab] = LINEUP;
+sedan(0xe9eaed, whiteSedan.x, whiteSedan.z);
+sedan(0x8e1410, redSedan.x, redSedan.z);
+semiCab(semi.x, semi.z);
+cybertruck(truck.x, truck.z);
+cybercab(cab.x, cab.z);
 
 // red LED strips along the far side of the course, as in the footage
 {

@@ -7,7 +7,6 @@ import { body } from "../car/roadster";
 import type { Obstacle } from "../physics/types";
 import { CRATE_SIZE, WALL_HALF_WIDTH, WALL_HEIGHT, generateLayout, obstacleFor } from "./layout";
 import type { CourseItem } from "./layout";
-import { gameUI } from "./ui";
 
 export const course = new THREE.Group();
 course.visible = false;
@@ -103,7 +102,6 @@ export function buildCourse(seed: number): BuiltCourse {
     else if (item.kind === "can") built.cans.push({ mesh: mesh as THREE.Group, x: item.x, y: item.y, z: item.z, collected: false });
   }
   built.obstacles.push(...BARRIERS.map(b => ({ ...b })));
-  gameUI.courseNumber.textContent = "#" + seed % 10000;
   return built;
 }
 

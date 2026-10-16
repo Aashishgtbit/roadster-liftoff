@@ -10,15 +10,21 @@ real-time 3D stunts that are **computed by a physics simulation**, with sound ge
 > Masses, thrusts and other physics values are estimates. Tesla, Roadster, Cybertruck, Cybercab and Semi are
 > trademarks of Tesla, Inc.
 
-## Two stunts and a game
+## Two stunts and a game, all playable
+
+Each stunt can be **watched** (the flight computer flies it, as on the night) or **played**: press **Play it**.
 
 **Lineup jump.** The car spools its floor jets, lifts off, rolls 360° along its direction of travel over two
-sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s.
+sedans, a Semi cab, a Cybertruck and a Cybercab, and glides down to land at about 2 m/s. *Played:* lift off before
+the first car, roll in the air with Q / E, and land on your wheels past the Cybercab. The parked vehicles are solid.
+Score: clearing the lineup, each full roll, and how soft the landing is.
 
 **Ramp hang.** Suction fans pull the car onto a tall curved wall. It climbs past vertical, pauses upside down
 about 12 m up, creeps to the end of the runway and tips off upside down. Past the runway it rolls 180° about
 its own length (an x-axis flip), so it comes up on its wheels facing the opposite way to the runway, hovers slowly
-down on its jets, settles at the foot of the ramp and drives away.
+down on its jets, settles at the foot of the ramp and drives away. *Played:* gas up the wall (the fans and motors
+hold you on it), let go to stop upside down at the top, gas off the end, roll 180° and land on your wheels. Score:
+how far you climbed, how long you hung, and the landing.
 
 ![The ramp hang, six moments](docs/ramp-hang.png)
 
@@ -32,7 +38,8 @@ concrete barriers you can scrape along (but not fly out over), with grandstands 
   recompress slowly on the ground.
 - **Clock and record**: a live timer, with your best time and score kept in your browser.
 
-Score is distance plus 100 per crate stack, 25 per canister, minus 200 per crash, plus a time bonus at the finish.
+Score is distance plus 100 per crate stack, 25 per canister, 150 per flip landed on the wheels, minus 200 per crash,
+plus a time bonus at the finish.
 
 ![Drive it](docs/drive-it.png)
 
@@ -70,7 +77,8 @@ src/
   car/                       the Roadster model: geometry, materials, nozzle layout, assembly
   scene/                     sky, ground, markings, floodlights
   stunts/                    the lineup and the ramp
-  game/                      Drive it: layout (pure), course (3D), game rules, records, UI handles
+  game/                      playing: modes, input (keys and touch), Drive it (layout, course, rules), the stunt
+                             challenges, results, records
   run/                       the app's simulation instance, and the runner that applies it to the scene
   camera/, audio/, effects/, core/, ui/
   styles/                    tokens, buttons, stage, game, app, story
@@ -80,15 +88,16 @@ test/                        Vitest: physics.test.ts, layout.test.ts
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to add a stunt or an obstacle.
 
-Driving (Drive it):
+Driving and flying (Drive it and the played stunts; the keys light up on screen while held):
 
 | Key | Touch | Does |
 | --- | --- | --- |
-| `W` / `↑` | Gas | Accelerate |
-| `S` / `↓` | Brake | Brake, then reverse |
-| `A` `D` / `←` `→` | ◀ ▶ | Steer (front wheels on the ground, nose jets in the air) |
-| `Space` | Jets | Floor jets: climb to a hover about 4.5 m up and hold it |
-| `Shift` | Boost | Rear jets |
+| `W` / `↑` | ↑ | Accelerate (up the wall on the ramp) |
+| `S` / `↓` | ↓ | Brake, then reverse; in the air, glide down to a soft landing on the jets |
+| `A` `D` / `←` `→` | ‹ › | Steer (front wheels on the ground, nose jets in the air) |
+| `Q` `E` | ⟲ ⟳ | In the air: roll (flip) about the car's length; let go mid-flip and it finishes the roll |
+| `Space` | jets | Floor jets: climb to a hover and hold it |
+| `Shift` | boost | Rear jets |
 | `R` | | Put the car back on its wheels (it also rights itself if stuck upside down) |
 
 Controls in the 3D view:
@@ -98,6 +107,7 @@ Controls in the 3D view:
 | **Choose a stunt** | Switch between Lineup jump, Drive it and Ramp hang |
 | **Sound** | Turn the live sound on or off (browsers only allow audio after a click) |
 | **Wing** | Cycle Tesla's Track Mode aero: Road (stowed), High-Downforce, Low-Drag |
+| **Play it / Watch demo** | Fly the stunt yourself, or watch the flight computer do it |
 | **Free look** | Drag to orbit the car; click again to return to the cinematic camera |
 | **Pause / Replay** | Pause the run or restart it |
 

@@ -13,9 +13,5 @@
 .tab:focus-visible { outline: 2px solid var(--gas); outline-offset: 3px; }
 
 @media (max-width: 560px) { .stage-ctl { top: auto; bottom: 34px; left: var(--gutter); right: var(--gutter); flex-wrap: wrap; } .stage-note { left: var(--gutter); } }
-.hud { position: absolute; top: 14px; left: var(--gutter); display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 10px 12px; background: rgba(9,13,24,.62); border: 1px solid var(--rule); border-radius: 6px; backdrop-filter: blur(4px); font-variant-numeric: tabular-nums; }
-.hud dt { color: var(--muted); text-transform: uppercase; }
-.hud dd { margin: 0; color: var(--fg); min-width: 13ch; }
-.hud dd.on { color: var(--gas); }
 .stage-ctl { position: absolute; top: 14px; right: var(--gutter); display: flex; gap: 8px; }
 .stage-note { position: absolute; bottom: 10px; right: var(--gutter); font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .06em; }

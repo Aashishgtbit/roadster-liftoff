@@ -6,7 +6,7 @@ import { buttons, canvas, setLabel } from "../ui/dom";
 import { RAMP } from "../config";
 import { camera } from "../core/renderer";
 import { car } from "../car/roadster";
-import { cameraShake } from "../game/game";
+import { cameraShake } from "../game/feedback";
 import { carState } from "../run/sim";
 
 const position = new THREE.Vector3(), lookAt = new THREE.Vector3();             // where the camera is
@@ -16,11 +16,17 @@ const heading = new THREE.Vector3(), shake = new THREE.Vector3();
 /** Pick the shot for the current moment. The car can drift sideways; every shot follows it. */
 function chooseShot() {
   const { x, y, z } = car.position;
-  if (carState.scenario === "drive") {   // chase camera behind the car
+  const player = carState.pilot === "player";
+  if (player && carState.scenario === "ramp" && x > RAMP.startX - 9) {   // playing the ramp: side on, framing car and wall
+    wantPosition.set(x + 1.5, Math.max(3, y * 0.75 + 2.5), 26); wantLookAt.set(x + 1, Math.max(2, y * 0.8 + 1), 0);
+    return;
+  }
+  if (player) {   // chase camera behind the car; a little wider over the lineup, so the cars stay in view
+    const wide = carState.scenario === "jump" ? 1.25 : 1;
     heading.set(1, 0, 0).applyQuaternion(car.quaternion); heading.y = 0;
     if (heading.lengthSq() < 0.01) heading.set(1, 0, 0);
     heading.normalize();
-    wantPosition.copy(car.position).addScaledVector(heading, -9.5); wantPosition.y = Math.max(2.6, y + 2.9);
+    wantPosition.copy(car.position).addScaledVector(heading, -9.5 * wide); wantPosition.y = Math.max(2.6 * wide, y + 2.9 * wide);
     wantLookAt.copy(car.position).addScaledVector(heading, 7); wantLookAt.y = y + 0.4;
     return;
   }
@@ -79,11 +85,11 @@ export function updateCamera(dt: number) {
   chooseShot();
   if (app.snapCamera) { position.copy(wantPosition); lookAt.copy(wantLookAt); app.snapCamera = false; }
   else {
-    const ease = 1 - Math.exp(-dt * (carState.scenario === "drive" ? 5 : 2.4));
+    const ease = 1 - Math.exp(-dt * (carState.pilot === "player" ? 5 : 2.4));
     position.lerp(wantPosition, ease); lookAt.lerp(wantLookAt, ease);
   }
   camera.position.copy(position);
   camera.lookAt(lookAt);
   const shaking = cameraShake();
-  if (carState.scenario === "drive" && shaking > 0) camera.position.add(shake.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shaking * 0.9));
+  if (shaking > 0) camera.position.add(shake.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shaking * 0.9));
 }

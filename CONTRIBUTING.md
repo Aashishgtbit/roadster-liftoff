@@ -16,7 +16,7 @@ npm run typecheck    # strict TypeScript; npm run build runs it too
 
 ```mermaid
 flowchart LR
-  input[game/game.ts<br>keys and touch] --> sim
+  input[game/input.ts<br>keys and touch] --> sim
   stunt[run/runner.ts<br>setStunt] --> sim
   sim[physics/simulation.ts<br>240 Hz rigid body,<br>tyres, nozzles, fans] --> fc[physics/flight-computer.ts<br>fires the nozzles]
   fc --> sim
@@ -40,12 +40,12 @@ places the camera, `updateSound()` sets the synth levels and `composer.render()`
 | `src/config.ts` | Constants shared by the physics, the visuals and the tests: car dimensions, the ramp's shape, course size and the track boundaries. |
 | `src/car/` | The Roadster model. `geometry.ts` holds the measured cross-sections and lofting, `materials.ts` the materials, `nozzle-layout.ts` where the ten nozzles sit (shared with the physics), `roadster.ts` the assembly and the wing animation. |
 | `src/stunts/` | Scenery for the scripted stunts: the parked lineup and the curved ramp. |
-| `src/game/` | Drive it. `layout.ts` generates random courses (pure, tested), `course.ts` builds them in 3D with the fixed scenery, `game.ts` holds rules, scoring and input, `records.ts` the saved best, `ui.ts` the element handles. |
+| `src/game/` | Playing. `modes.ts` decides who flies (the scripted flight computer or the player) and routes the physics events; `input.ts` is the keyboard and touch controls (one `ACTIONS` table draws the keycaps and touch buttons); `drive-game.ts` is Drive it's rules, with `layout.ts` (random courses, pure, tested) and `course.ts` (the 3D course); `stunt-play.ts` is the played lineup jump and ramp hang; `results.ts`, `records.ts`, `feedback.ts` (toasts, shake) and `ui.ts` are shared. |
 | `src/run/` | `sim.ts` creates the app's one simulation; `runner.ts` applies it to the scene and switches stunts. |
 | `src/camera/`, `src/audio/`, `src/effects/` | Camera shots, synthesised sound, gas plumes. |
 | `src/core/` | Renderer and scene, bloom and resizing, the shared `app` flags, maths helpers. |
-| `src/ui/` | Element handles (`byId`, `setLabel`), buttons, full screen. |
-| `src/styles/` | `tokens.css` (colours and type), `buttons.css`, `stage.css`, `game.css`, `app.css` (top bar and layout), `story.css`. |
+| `src/ui/` | Element handles (`byId`, `setLabel`), buttons, full screen, the SVG gauges (`gauges.ts`) and the telemetry cluster (`hud.ts`). |
+| `src/styles/` | `tokens.css` (colours and type), `buttons.css`, `stage.css`, `game.css`, `gauges.css`, `app.css` (top bar and layout), `story.css`. |
 
 Shared mutable flags (`playing`, `freeLook`, `visible`, `needsRender`, `snapCamera`) live on the `app` object in
 `src/core/state.ts`. Change them through `app.x = …`; don't create module-level `let`s that other modules need to
@@ -76,8 +76,12 @@ write.
    shape in `obstacleFor` (a `BoxObstacle` with `breakable: true` if it gives way when hit fast, or a
    `RampObstacle` for a wedge the wheels can drive up).
 2. Build its mesh in `buildItem` in `src/game/course.ts`.
-3. React to hits in the `sim.events.onHit` / `onBust` handlers in `src/game/game.ts`.
+3. React to hits in `onDriveHit` / `onDriveBust` in `src/game/drive-game.ts`.
 4. `npm test`: the layout tests check every course stays inside the track with room between obstacles.
+
+**Add a control.** Add an entry to `ACTIONS` in `src/game/input.ts` (keys, keycap, caption, icon) and to
+`DriverInput`; the keycap and touch button appear by themselves. Then use it in `playerControl` in
+`flight-computer.ts`.
 
 **Add a scripted stunt.** Add the scenario to `Scenario` and its phases to `Phase` (`physics/types.ts`), a start
 position in `START_X` (`simulation.ts`), and its phases in `flight-computer.ts` (what each nozzle and the drive force
